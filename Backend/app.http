@@ -1,0 +1,112 @@
+# Get all users
+GET http://localhost:3000/users
+Content-Type: application/json
+Accept: application/json
+
+###
+
+# Create a new user
+POST http://localhost:3000/users
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "hemanth",
+  "email": "ramasaiahemanth@gmail.com",
+  "password": "hemanth@777"
+}
+
+###
+#login user
+POST http://localhost:3000/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "ramasaiahemanth@gmail.com",
+  "password": "hemanth@777"
+}
+
+
+###
+
+# Get user by ID
+GET http://localhost:3000/users/3
+Content-Type: application/json
+Accept: application/json
+
+###
+# Update user by ID
+PUT http://localhost:3000/users/1
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Jane Smith",
+  "email": "jane@example.com"
+}
+
+###
+
+# Delete user by ID
+DELETE http://localhost:3000/users/2
+Content-Type: application/json
+Accept: application/json
+
+### 
+# Login user
+POST http://localhost:3000/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "john@example.com",
+  "password": "hemanth@123"
+}
+
+###
+
+# Send Welcome Email (Manual trigger)
+POST http://localhost:3000/send-welcome-email
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "test@example.com"
+}
+
+###
+
+# Send Session Expiry Email
+POST http://localhost:3000/send-session-expiry
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "test@example.com"
+}
+
+###
+
+# Send Reminder Email
+POST http://localhost:3000/send-reminder-email
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "test@example.com",
+  "daysSinceLastActive": 2
+}
+
+###
+
+# Send OTP Email
+POST http://localhost:3000/send-otp
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "test@example.com"
+}
+
+### 

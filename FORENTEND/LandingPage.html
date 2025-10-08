@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./CSSPAge/landingpage.css">
+</head>
+<body>
+    <!-- Loader Animation -->
+        <div id="loader" class="loader">
+            <div class="loader-content">
+                <div class="spinner"></div>
+                <h2>TodoList</h2>
+                <p>Loading your organized life...</p>
+            </div>
+        </div>
+    
+    <div class = "mainPage">
+    <header>
+        <nav class  = "navbar">
+                <div class = "navbar-brand">
+                    <img width="50" height="50" src="https://img.icons8.com/3d-fluency/94/test-passed.png" alt="test-passed"/>
+                    <span class="brand-text">TodoList</span>
+                </div>
+                
+                <!-- Hamburger Menu Button -->
+                <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+                
+                <div class = "navbar-menu" id="navbarMenu">
+                    <div class = "Elements">
+                        <p data-scroll="homeSection">Home</p>
+                        <p data-scroll="aboutSection">About Us</p>
+                        <p data-scroll="supportSection">Support</p>
+                    </div>
+                    <div class = "navElements">
+                        <a class="para5" href="./REgisterPage.html">
+                        <p class="para5">Login</p>
+                        </a>
+                        <p class="para5">Sign Up</p>
+                        
+                    </div>
+                </div>
+            </nav>
+        <div id="homeSection" class = "FirstPage">
+                        <div class = "TextElements1 col-12 col-md-6 md-6 sm-12 xs-12 ">
+                            <h1>Organize Your Life, One at a Time</h1>
+                            <button class = "button1">Get Started Free</button>
+                        </div>
+            <div class  ="Img2">
+                <img class  ="Img3" src = "Img2.png" alt = "Img1">
+            </div>
+        </div>
+
+    </header>
+    
+    <!-- Home Features Section -->
+    <section class="home-features">
+        <div class="SectionTitle">
+            <h1>Why Choose Our Todo App?</h1>
+        </div>
+        <div class = "SecondPage">
+    <div class="Icon1">
+       <img class="Img4" width="78" height="78" src="./icons8-task.gif" alt="external-Task-Management-business-tools-filled-color-icons-papa-vector"/>
+        <h3>Task Management</h3>
+        <p>Organize and track your daily tasks efficiently</p>
+    </div>
+    <div class="Icon2">
+        <img class="Img4" width="70" height="70" src="./icons8-calendar.gif" alt="test-passed"/>
+        <h3>Calendar Sync</h3>
+        <p>Sync your tasks with your favorite calendar apps</p>
+    </div>
+
+    <div class="Icon3">
+        <img  class="Img4"  width="70" height="70" src="./icons8-in-progress-96.gif" alt="test-passed"/>
+        <h3>Progress Tracking</h3>
+        <p>Monitor your progress and achievements</p>
+    </div>
+    <div class="Icon4">
+        <img   class="Img4" width="70" height="70" src="./icons8-alarm-clock.gif" alt="test-passed"/>
+        <h3>Time Management</h3>
+        <p>Optimize your time and boost productivity</p>
+    </div>
+    </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section id="aboutSection" class="scroll-section">
+        <div class="about-content">
+            <div class="SectionTitle">
+                <h1>About TodoList</h1>
+            </div>
+            <div class="about-section">
+                <div class="about-text">
+                    <h2>Our Mission</h2>
+                    <p>At TodoList, we believe that productivity shouldn't be complicated. Our mission is to provide a simple, elegant, and powerful task management solution that helps you organize your life without getting in your way.</p>
+                    
+                    <h2>Our Story</h2>
+                    <p>Founded in 2024, TodoList was born from the frustration of using overcomplicated productivity apps. We wanted to create something that felt natural, looked beautiful, and actually helped people get things done.</p>
+                    
+                    <h2>Our Values</h2>
+                    <div class="values-grid">
+                        <div class="value-item">
+                            <h3>🎯 Simplicity</h3>
+                            <p>We believe the best tools are the ones you don't have to think about.</p>
+                        </div>
+                        <div class="value-item">
+                            <h3>🔒 Privacy</h3>
+                            <p>Your tasks and data belong to you, always.</p>
+                        </div>
+                        <div class="value-item">
+                            <h3>⚡ Performance</h3>
+                            <p>Fast, responsive, and reliable across all your devices.</p>
+                        </div>
+                        <div class="value-item">
+                            <h3>🌟 Quality</h3>
+                            <p>Every feature is carefully crafted and thoroughly tested.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support Section -->
+    <section id="supportSection" class="scroll-section">
+        <div class="support-content">
+            <div class="SectionTitle">
+                <h1>Support Center</h1>
+            </div>
+            <div class="support-section">
+                <div class="support-categories">
+                    <div class="support-item">
+                        <h3>📚 Getting Started</h3>
+                        <p>New to TodoList? Learn the basics and get up and running in minutes.</p>
+                        <ul>
+                            <li>Creating your first task</li>
+                            <li>Organizing with categories</li>
+                            <li>Setting up reminders</li>
+                            <li>Syncing across devices</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="support-item">
+                        <h3>🔧 Troubleshooting</h3>
+                        <p>Having issues? Check out our common solutions.</p>
+                        <ul>
+                            <li>Sync problems</li>
+                            <li>Notification issues</li>
+                            <li>Account problems</li>
+                            <li>Browser compatibility</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="support-item">
+                        <h3>💡 Tips & Tricks</h3>
+                        <p>Make the most of TodoList with these productivity tips.</p>
+                        <ul>
+                            <li>Keyboard shortcuts</li>
+                            <li>Advanced filtering</li>
+                            <li>Time management techniques</li>
+                            <li>Workflow optimization</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="support-item">
+                        <h3>📧 Contact Us</h3>
+                        <p>Still need help? We're here for you!</p>
+                        <ul>
+                            <li>Email: support@todolist.com</li>
+                            <li>Live Chat: Available 9AM-6PM EST</li>
+                            <li>Response time: Within 24 hours</li>
+                            <li>Community Forum: Join discussions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    </div>
+
+    <script>
+        // Loader functionality
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('loader');
+            
+            // Add fade out animation after 2 seconds
+            setTimeout(function() {
+                loader.style.opacity = '-1';
+                loader.style.transition = 'opacity 0.5s ease-in';
+                
+                // Remove loader from DOM after fade out
+                setTimeout(function() {
+                    loader.style.display = 'none';
+                }, 500);
+            }, 3000); // Show loader for 2 seconds
+        });
+
+        // Navbar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbarToggle = document.getElementById('navbarToggle');
+            const navbarMenu = document.getElementById('navbarMenu');
+            
+            navbarToggle.addEventListener('click', function() {
+                navbarMenu.classList.toggle('active');
+                navbarToggle.classList.toggle('active');
+            });
+
+            // Close menu when clicking on menu items
+            const menuItems = navbarMenu.querySelectorAll('p');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    navbarMenu.classList.remove('active');
+                    navbarToggle.classList.remove('active');
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const isClickInsideNav = navbarToggle.contains(event.target) || navbarMenu.contains(event.target);
+                
+                if (!isClickInsideNav && navbarMenu.classList.contains('active')) {
+                    navbarMenu.classList.remove('active');
+                    navbarToggle.classList.remove('active');
+                }
+            });
+
+            // Smooth Scroll Navigation Functionality
+            function smoothScrollTo(targetId) {
+                const target = document.getElementById(targetId);
+                if (target) {
+                    // Calculate offset for fixed navbar
+                    const navbarHeight = document.querySelector('.navbar').offsetHeight;
+                    const targetPosition = target.offsetTop - navbarHeight - 20;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+
+            // Navigation event listeners
+            const navElements = document.querySelectorAll('[data-scroll]');
+            navElements.forEach(element => {
+                element.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-scroll');
+                    smoothScrollTo(targetId);
+                    
+                    // Close mobile menu if open
+                    navbarMenu.classList.remove('active');
+                    navbarToggle.classList.remove('active');
+                });
+            });
+
+            // Auth page switching (scroll-based)
+            const showSignUpLink = document.getElementById('showSignUp');
+            const showLoginLink = document.getElementById('showLogin');
+            
+            if (showSignUpLink) {
+                showSignUpLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    smoothScrollTo('signupSection');
+                });
+            }
+            
+            if (showLoginLink) {
+                showLoginLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    smoothScrollTo('loginSection');
+                });
+            }
+
+            // Brand logo click - scroll to top
+            const brandLogo = document.querySelector('.navbar-brand');
+            brandLogo.addEventListener('click', function() {
+                smoothScrollTo('homeSection');
+            });
+
+            // Active navigation highlight based on scroll position
+            function updateActiveNav() {
+                const sections = document.querySelectorAll('.scroll-section, #homeSection');
+                const navItems = document.querySelectorAll('[data-scroll]');
+                
+                let current = 'homeSection';
+                const navbarHeight = document.querySelector('.navbar').offsetHeight;
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop - navbarHeight - 100;
+                    if (window.scrollY >= sectionTop) {
+                        current = section.id;
+                    }
+                });
+                
+                navItems.forEach(item => {
+                    item.classList.remove('active-nav');
+                    if (item.getAttribute('data-scroll') === current) {
+                        item.classList.add('active-nav');
+                    }
+                });
+            }
+            window.addEventListener('scroll', updateActiveNav);
+            updateActiveNav();
+        });
+    </script>
+    
+    <!-- Backend API Integration -->
+    <script src="../BACKEND/frontend-integration.js"></script>
+</body>
+</html>
