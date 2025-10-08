@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
-const port = 3000; // Define port for use in email templates
+const port = 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -34,7 +34,7 @@ async function sendWelcomeEmail(email) {
     const loginLink = `http://localhost:3000`;
     
     const mailOptions = {
-        from: '"Todo List App" <todolist725@gmail.com>',
+        from: '"Todo List App"',
         to: email,
         subject: '🎉 Welcome to Your Todo List App!',
         html: `

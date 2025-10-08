@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../CSSPAge/SettingsPage.css" rel="stylesheet">
+    <title>Todo List - Settings</title>
+</head>
+
+<body>
+    <!-- Sidebar with navigation icons -->
+    <div class="SiderBar">
+        <img class="nav-icon" src="https://img.icons8.com/3d-fluency/375/home.png" alt="home" title="Home" onclick="navigateTo('Home.html')" />
+        <img class="nav-icon" src="https://img.icons8.com/cute-clipart/64/overtime.png" alt="tasks" title="WorkSpace" onclick="navigateTo('WorkSpace.html')" />
+        <img class="nav-icon" src="https://img.icons8.com/3d-fluency/94/tear-off-calendar.png" alt="calendar" title="Schedule" onclick="navigateTo('Schedule.html')" />
+        <img class="nav-icon active" src="https://img.icons8.com/3d-fluency/94/gear--v1.png" alt="settings" title="Settings" onclick="navigateTo('Settings.html')" />
+    </div>
+
+    <!-- Main content area -->
+    <div class="main-content">
+        <div class="header">
+            <h1>⚙️ Settings</h1>
+            <p>Customize your Todo List experience</p>
+        </div>
+        
+        <div class="settings-container">
+            <div class="settings-section">
+                <h2>👤 Profile Settings</h2>
+                <div class="settings-group">
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            <img src="https://img.icons8.com/3d-fluency/94/user-male-circle.png" alt="Profile" />
+                            <button class="change-avatar">📷</button>
+                        </div>
+                        <div class="profile-details">
+                            <label>Name</label>
+                            <input type="text" value="Hemanth" />
+                            
+                            <label>Email</label>
+                            <input type="email" value="ramasaiahemanth@gmail.com" />
+                            
+                            <label>Phone</label>
+                            <input type="tel" placeholder="Enter phone number" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>🎨 Appearance</h2>
+                <div class="settings-group">
+                    <div class="setting-item">
+                        <label>Theme</label>
+                        <select id="themeSelect">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="auto">System</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>Language</label>
+                        <select>
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>Date Format</label>
+                        <select>
+                            <option value="mm/dd/yyyy">MM/DD/YYYY</option>
+                            <option value="dd/mm/yyyy">DD/MM/YYYY</option>
+                            <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>🔔 Notifications</h2>
+                <div class="settings-group">
+                    <div class="setting-toggle">
+                        <label>Email Notifications</label>
+                        <input type="checkbox" class="toggle" checked />
+                    </div>
+                    
+                    <div class="setting-toggle">
+                        <label>Task Reminders</label>
+                        <input type="checkbox" class="toggle" checked />
+                    </div>
+                    
+                    <div class="setting-toggle">
+                        <label>Weekly Reports</label>
+                        <input type="checkbox" class="toggle" />
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>Reminder Time</label>
+                        <select>
+                            <option value="15">15 minutes before</option>
+                            <option value="30">30 minutes before</option>
+                            <option value="60">1 hour before</option>
+                            <option value="120">2 hours before</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>🔒 Privacy & Security</h2>
+                <div class="settings-group">
+                    <div class="setting-toggle">
+                        <label>Two-Factor Authentication</label>
+                        <input type="checkbox" class="toggle" />
+                    </div>
+                    
+                    <div class="setting-toggle">
+                        <label>Auto-lock after inactivity</label>
+                        <input type="checkbox" class="toggle" checked />
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>Session Timeout</label>
+                        <select>
+                            <option value="15">15 minutes</option>
+                            <option value="30">30 minutes</option>
+                            <option value="60">1 hour</option>
+                            <option value="240">4 hours</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn-danger">Change Password</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>💾 Data Management</h2>
+                <div class="settings-group">
+                    <div class="data-actions">
+                        <button class="btn-primary">Export Data</button>
+                        <button class="btn-secondary">Import Data</button>
+                        <button class="btn-warning">Backup Now</button>
+                    </div>
+                    
+                    <div class="setting-toggle">
+                        <label>Auto Backup</label>
+                        <input type="checkbox" class="toggle" checked />
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>Backup Frequency</label>
+                        <select>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-actions">
+                <button class="btn-primary" onclick="saveSettings()">💾 Save Changes</button>
+                <button class="btn-secondary" onclick="resetSettings()">🔄 Reset to Default</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation function
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        // Settings functionality
+        function saveSettings() {
+            // Get all form values
+            const settings = {
+                theme: document.getElementById('themeSelect').value,
+                notifications: {
+                    email: document.querySelector('input[type="checkbox"]:nth-child(1)').checked,
+                    reminders: document.querySelector('input[type="checkbox"]:nth-child(2)').checked,
+                    reports: document.querySelector('input[type="checkbox"]:nth-child(3)').checked
+                }
+            };
+
+            // Save to localStorage (in a real app, this would be sent to server)
+            localStorage.setItem('todoSettings', JSON.stringify(settings));
+            
+            // Show success message
+            alert('Settings saved successfully!');
+        }
+
+        function resetSettings() {
+            if (confirm('Are you sure you want to reset all settings to default?')) {
+                localStorage.removeItem('todoSettings');
+                location.reload();
+            }
+        }
+
+        // Load saved settings
+        function loadSettings() {
+            const saved = localStorage.getItem('todoSettings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                document.getElementById('themeSelect').value = settings.theme || 'light';
+                // Apply other saved settings...
+            }
+        }
+
+        // Theme switching
+        document.getElementById('themeSelect').addEventListener('change', (e) => {
+            const theme = e.target.value;
+            document.body.className = theme === 'dark' ? 'dark-theme' : '';
+        });
+
+        // Initialize settings on page load
+        loadSettings();
+
+        // Toggle switches functionality
+        document.querySelectorAll('.toggle').forEach(toggle => {
+            toggle.addEventListener('change', () => {
+                // Add visual feedback
+                toggle.parentElement.classList.toggle('enabled', toggle.checked);
+            });
+        });
+    </script>
+</body>
+
+</html>

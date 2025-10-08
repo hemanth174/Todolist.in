@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../CSSPAge/HomePage.css" rel="stylesheet">
+    <title>Todo List - Home</title>
+</head>
+
+<body>
+    <!-- Sidebar with navigation icons -->
+    <div class="SiderBar">
+        <img class="nav-icon active" src="https://img.icons8.com/3d-fluency/375/home.png" alt="home" title="Home" onclick="navigateTo('Home.html')" />
+        <img class="nav-icon" src="https://img.icons8.com/cute-clipart/64/overtime.png" alt="tasks" title="WorkSpace" onclick="navigateTo('WorkSpace.html')" />
+        <img class="nav-icon" src="https://img.icons8.com/3d-fluency/94/tear-off-calendar.png" alt="calendar" title="Schedule" onclick="navigateTo('Schedule.html')" />
+        <img class="nav-icon" src="https://img.icons8.com/3d-fluency/94/gear--v1.png" alt="settings" title="Settings" onclick="navigateTo('Settings.html')" />
+    </div>
+
+    <!-- Main content area -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Welcome to Your Todo List</h1>
+            <p>Stay organized and productive!</p>
+        </div>
+        
+        <div class="todo-container">
+            <div class="add-todo">
+                <input type="text" placeholder="Add a new task..." id="todoInput" />
+                <button id="addBtn">Add Task</button>
+            </div>
+            
+            <div class="todo-stats">
+                <div class="stat-card">
+                    <span class="stat-number">0</span>
+                    <span class="stat-label">Total Tasks</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">0</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">0</span>
+                    <span class="stat-label">Remaining</span>
+                </div>
+            </div>
+            
+            <div class="todo-list" id="todoList">
+                <!-- Todo items will be added here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add click handlers for navigation
+        document.querySelectorAll('.nav-icon').forEach(icon => {
+            icon.addEventListener('click', function() {
+                // Remove active class from all icons
+                document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
+                // Add active class to clicked icon
+                this.classList.add('active');
+            });
+        });
+
+        // Simple todo functionality
+        const todoInput = document.getElementById('todoInput');
+        const addBtn = document.getElementById('addBtn');
+        const todoList = document.getElementById('todoList');
+
+        addBtn.addEventListener('click', addTodo);
+        todoInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addTodo();
+        });
+
+        function addTodo() {
+            const text = todoInput.value.trim();
+            if (text) {
+                const todoItem = document.createElement('div');
+                todoItem.className = 'todo-item';
+                todoItem.innerHTML = `
+                    <span class="todo-text">${text}</span>
+                    <button class="delete-btn" onclick="removeTodo(this)">×</button>
+                `;
+                todoList.appendChild(todoItem);
+                todoInput.value = '';
+                updateStats();
+            }
+        }
+
+        function removeTodo(btn) {
+            btn.parentElement.remove();
+            updateStats();
+        }
+
+        function updateStats() {
+            const total = document.querySelectorAll('.todo-item').length;
+            document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = total;
+            document.querySelector('.stat-card:nth-child(3) .stat-number').textContent = total;
+        }
+
+        // Navigation function
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+    </script>
+</body>
+
+</html>

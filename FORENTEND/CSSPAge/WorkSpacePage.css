@@ -1,0 +1,344 @@
+/* WorkSpace Page Specific Styles */
+
+/* Base styles for WorkSpace page */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f5f7fa;
+}
+
+/* Sidebar styles (common) */
+.SiderBar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #e8f2ff 0%, #f0f8ff 100%);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px 0;
+    gap: 15px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+}
+
+.SiderBar img {
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.SiderBar img:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.SiderBar img:active {
+    transform: translateY(-1px) scale(1.05);
+}
+
+.SiderBar img.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Main content area */
+.main-content {
+    margin-left: 80px;
+    flex: 1;
+    padding: 20px;
+    background-color: #f5f7fa;
+}
+
+/* Header styles */
+.header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.header h1 {
+    color: #2c3e50;
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.header p {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+}
+
+/* WorkSpace specific styles */
+.workspace-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.project-board {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.board-column {
+    min-width: 300px;
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease;
+}
+
+.board-column:hover {
+    transform: translateY(-2px);
+}
+
+.column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.column-header h3 {
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.task-count {
+    background: #667eea;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 15px;
+    min-height: 200px;
+    padding: 5px;
+}
+
+.task-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.task-card:active {
+    cursor: grabbing;
+}
+
+.task-card.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.task-card.completed {
+    opacity: 0.7;
+    border-left-color: #28a745;
+}
+
+.task-card.completed h4 {
+    text-decoration: line-through;
+}
+
+.task-card h4 {
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.task-card p {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.task-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.priority {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+}
+
+.priority.high {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.priority.medium {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.priority.low {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.due-date {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.add-task-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 2px dashed #ddd;
+    border-radius: 10px;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.add-task-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.workspace-stats {
+    display: flex;
+    gap: 20px;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.stat-widget {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    flex: 1;
+    min-width: 200px;
+    transition: transform 0.2s ease;
+}
+
+.stat-widget:hover {
+    transform: translateY(-5px);
+}
+
+.stat-widget h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.stat-widget p {
+    color: #6c757d;
+    margin: 5px 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    margin: 10px 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+/* Drag and drop styling */
+.task-list.drag-over {
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 10px;
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+    .project-board {
+        flex-direction: column;
+        overflow-x: visible;
+    }
+    
+    .board-column {
+        min-width: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .SiderBar {
+        width: 60px;
+    }
+    
+    .main-content {
+        margin-left: 60px;
+        padding: 15px;
+    }
+    
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    .workspace-stats {
+        flex-direction: column;
+    }
+    
+    .task-card {
+        padding: 12px;
+    }
+    
+    .task-meta {
+        flex-direction: column;
+        gap: 5px;
+        align-items: flex-start;
+    }
+}

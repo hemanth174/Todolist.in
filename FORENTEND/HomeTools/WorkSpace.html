@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../CSSPAge/WorkSpacePage.css" rel="stylesheet">
+    <title>Todo List - WorkSpace</title>
+</head>
+
+<body>
+    <!-- Sidebar with navigation icons -->
+    <div class="SiderBar">
+        <img class="nav-icon" src="https://img.icons8.com/3d-fluency/375/home.png" alt="home" title="Home" onclick="navigateTo('Home.html')" />
+        <img class="nav-icon active" src="https://img.icons8.com/cute-clipart/64/overtime.png" alt="tasks" title="WorkSpace" onclick="navigateTo('WorkSpace.html')" />
+        <img class="nav-icon" src="https://img.icons8.com/3d-fluency/94/tear-off-calendar.png" alt="calendar" title="Schedule" onclick="navigateTo('Schedule.html')" />
+        <img class="nav-icon" src="https://img.icons8.com/3d-fluency/94/gear--v1.png" alt="settings" title="Settings" onclick="navigateTo('Settings.html')" />
+    </div>
+
+    <!-- Main content area -->
+    <div class="main-content">
+        <div class="header">
+            <h1>⚡ WorkSpace</h1>
+            <p>Organize your projects and boost your productivity!</p>
+        </div>
+        
+        <div class="workspace-container">
+            <div class="project-board">
+                <div class="board-column">
+                    <div class="column-header">
+                        <h3>📋 To Do</h3>
+                        <span class="task-count">3</span>
+                    </div>
+                    <div class="task-list" id="todoColumn">
+                        <div class="task-card">
+                            <h4>Design Homepage</h4>
+                            <p>Create wireframes and mockups</p>
+                            <div class="task-meta">
+                                <span class="priority high">High</span>
+                                <span class="due-date">Due: Oct 10</span>
+                            </div>
+                        </div>
+                        <div class="task-card">
+                            <h4>Setup Database</h4>
+                            <p>Configure MongoDB connection</p>
+                            <div class="task-meta">
+                                <span class="priority medium">Medium</span>
+                                <span class="due-date">Due: Oct 12</span>
+                            </div>
+                        </div>
+                        <div class="task-card">
+                            <h4>Write Documentation</h4>
+                            <p>API endpoints documentation</p>
+                            <div class="task-meta">
+                                <span class="priority low">Low</span>
+                                <span class="due-date">Due: Oct 15</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="add-task-btn" onclick="addNewTask('todoColumn')">+ Add Task</button>
+                </div>
+
+                <div class="board-column">
+                    <div class="column-header">
+                        <h3>🔄 In Progress</h3>
+                        <span class="task-count">2</span>
+                    </div>
+                    <div class="task-list" id="progressColumn">
+                        <div class="task-card">
+                            <h4>Backend Development</h4>
+                            <p>Implement user authentication</p>
+                            <div class="task-meta">
+                                <span class="priority high">High</span>
+                                <span class="due-date">Due: Oct 9</span>
+                            </div>
+                        </div>
+                        <div class="task-card">
+                            <h4>Testing Phase</h4>
+                            <p>Unit tests for components</p>
+                            <div class="task-meta">
+                                <span class="priority medium">Medium</span>
+                                <span class="due-date">Due: Oct 11</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="add-task-btn" onclick="addNewTask('progressColumn')">+ Add Task</button>
+                </div>
+
+                <div class="board-column">
+                    <div class="column-header">
+                        <h3>✅ Completed</h3>
+                        <span class="task-count">4</span>
+                    </div>
+                    <div class="task-list" id="completedColumn">
+                        <div class="task-card completed">
+                            <h4>Project Setup</h4>
+                            <p>Initialize repository and tools</p>
+                            <div class="task-meta">
+                                <span class="priority medium">Medium</span>
+                                <span class="due-date">Completed: Oct 5</span>
+                            </div>
+                        </div>
+                        <div class="task-card completed">
+                            <h4>Requirements Analysis</h4>
+                            <p>Gather and document requirements</p>
+                            <div class="task-meta">
+                                <span class="priority high">High</span>
+                                <span class="due-date">Completed: Oct 6</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="add-task-btn" onclick="addNewTask('completedColumn')">+ Add Task</button>
+                </div>
+            </div>
+
+            <div class="workspace-stats">
+                <div class="stat-widget">
+                    <h3>📊 Project Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 65%"></div>
+                    </div>
+                    <p>65% Complete</p>
+                </div>
+                
+                <div class="stat-widget">
+                    <h3>⏰ Time Tracking</h3>
+                    <p><strong>Today:</strong> 4h 32m</p>
+                    <p><strong>This Week:</strong> 28h 15m</p>
+                </div>
+                
+                <div class="stat-widget">
+                    <h3>🎯 Goals</h3>
+                    <p><strong>Daily Goal:</strong> 6 hours</p>
+                    <p><strong>Weekly Goal:</strong> 40 hours</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation function
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        // Add new task functionality
+        function addNewTask(columnId) {
+            const taskTitle = prompt('Enter task title:');
+            const taskDescription = prompt('Enter task description:');
+            
+            if (taskTitle && taskDescription) {
+                const column = document.getElementById(columnId);
+                const taskCard = document.createElement('div');
+                taskCard.className = 'task-card';
+                
+                taskCard.innerHTML = `
+                    <h4>${taskTitle}</h4>
+                    <p>${taskDescription}</p>
+                    <div class="task-meta">
+                        <span class="priority medium">Medium</span>
+                        <span class="due-date">Due: Oct ${Math.floor(Math.random() * 20) + 10}</span>
+                    </div>
+                `;
+                
+                column.insertBefore(taskCard, column.lastElementChild);
+                updateTaskCounts();
+            }
+        }
+
+        // Update task counts
+        function updateTaskCounts() {
+            const columns = ['todoColumn', 'progressColumn', 'completedColumn'];
+            columns.forEach(columnId => {
+                const column = document.getElementById(columnId);
+                const taskCount = column.querySelectorAll('.task-card').length;
+                const header = column.previousElementSibling;
+                const countSpan = header.querySelector('.task-count');
+                countSpan.textContent = taskCount;
+            });
+        }
+
+        // Make tasks draggable (simple version)
+        document.querySelectorAll('.task-card').forEach(card => {
+            card.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', '');
+                card.classList.add('dragging');
+            });
+            
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+            });
+            
+            card.draggable = true;
+        });
+
+        // Make columns droppable
+        document.querySelectorAll('.task-list').forEach(list => {
+            list.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+            
+            list.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const draggedCard = document.querySelector('.dragging');
+                if (draggedCard) {
+                    list.insertBefore(draggedCard, list.lastElementChild);
+                    updateTaskCounts();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
