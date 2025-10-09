@@ -1,0 +1,76 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Complete the project",
+      "description": "hi",
+      "priority": "medium",
+      "status": "progress",
+      "dueDate": "2025-10-10",
+      "tags": [
+        "hi"
+      ],
+      "assignee": "John Doe",
+      "projectId": null,
+      "progress": 0,
+      "createdAt": "2025-10-09T16:55:17.984Z",
+      "updatedAt": "2025-10-09T16:56:20.631Z",
+      "completedAt": "2025-10-09T16:56:10.281Z"
+    }
+  ],
+  "projects": [],
+  "users": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "avatar": "https://via.placeholder.com/30"
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "avatar": "https://via.placeholder.com/30"
+    },
+    {
+      "id": 3,
+      "name": "Mike Johnson",
+      "email": "mike@example.com",
+      "avatar": "https://via.placeholder.com/30"
+    },
+    {
+      "id": 4,
+      "name": "Alex Wilson",
+      "email": "alex@example.com",
+      "avatar": "https://via.placeholder.com/30"
+    },
+    {
+      "id": 5,
+      "name": "Sarah Davis",
+      "email": "sarah@example.com",
+      "avatar": "https://via.placeholder.com/30"
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "Work",
+      "color": "#667eea"
+    },
+    {
+      "id": 2,
+      "name": "Personal",
+      "color": "#28a745"
+    },
+    {
+      "id": 3,
+      "name": "Urgent",
+      "color": "#dc3545"
+    },
+    {
+      "id": 4,
+      "name": "Meeting",
+      "color": "#ffc107"
+    }
+  ]
+}
