@@ -77,14 +77,193 @@
     to { opacity: 1; }
 }
 
+/* ============================================
+   ENHANCED ANIMATIONS
+   ============================================ */
+
+/* Parallax effect for background elements */
+.parallax-bg {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    transform: translateZ(0);
+}
+
+/* Subtle parallax movement */
+@keyframes parallaxMove {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+.parallax-element {
+    animation: parallaxMove 8s ease-in-out infinite;
+}
+
+/* Scroll-triggered animations */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes rotateIn {
+    from {
+        opacity: 0;
+        transform: rotate(-10deg) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes typewriter {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+@keyframes blink {
+    50% { border-color: transparent; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Animation classes */
+.animate-slide-left {
+    opacity: 0;
+    animation: slideInLeft 1s ease-out forwards;
+}
+
+.animate-slide-right {
+    opacity: 0;
+    animation: slideInRight 1s ease-out forwards;
+}
+
+.animate-fade-up {
+    opacity: 0;
+    animation: fadeUp 1s ease-out forwards;
+}
+
+.animate-zoom-in {
+    opacity: 0;
+    animation: zoomIn 1s ease-out forwards;
+}
+
+.animate-rotate-in {
+    opacity: 0;
+    animation: rotateIn 1s ease-out forwards;
+}
+
+.animate-bounce-in {
+    opacity: 0;
+    animation: bounceIn 1.2s ease-out forwards;
+}
+
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Typewriter effect */
+.typewriter {
+    overflow: hidden;
+    border-right: 3px solid #A0B2CE;
+    white-space: nowrap;
+    animation: typewriter 3s steps(40, end), blink 0.75s step-end infinite;
+}
+
+/* Staggered animations */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
+
 .mainPage{
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     margin: 20px;
-    background-color: #ffffff;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
     border:2px solid #fff;
     box-shadow: 0 0 10px 5px rgb(163, 158, 158);
-    height: 490vh;
+    height: auto;
+    min-height: 100vh;
 }
 .navbar{
     background-color: #f8f9fa;
@@ -202,6 +381,10 @@
     margin-bottom: 20px;
     color: #2c2c2c;
     margin-left: 100px;
+    overflow: hidden;
+    border-right: 3px solid #A0B2CE;
+    white-space: nowrap;
+    animation: typewriter 3s steps(40, end), blink 0.75s step-end infinite;
 }
 .TextElements1{
     text-decoration: none;
@@ -248,6 +431,7 @@
     margin-left:100px;
     margin-top: 50px;
     border-radius: 300px;
+    animation: zoomIn 1.5s ease-out, float 6s ease-in-out infinite 1.5s;
 }
 
 .SectionTitle{
@@ -289,9 +473,10 @@
 }
 
 .Icon1:hover, .Icon2:hover, .Icon3:hover, .Icon4:hover{
-    transform: translateY(-20px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-20px) scale(1.05);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
     border: 2px solid #A0B2CE;
+    background: linear-gradient(135deg, rgba(160, 178, 206, 0.1), rgba(200, 240, 253, 0.1));
 }
 .Img4{
     background-color:#c8f0fd;
