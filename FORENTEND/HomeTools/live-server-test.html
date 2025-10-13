@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Server Test - TodoList IDE</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid rgba(0, 255, 0, 0.5);
+        }
+        
+        .status.info {
+            background: rgba(0, 123, 255, 0.2);
+            border: 1px solid rgba(0, 123, 255, 0.5);
+        }
+        
+        #output {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            text-align: left;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 TodoList IDE Live Server Test</h1>
+            <p>Test your live server functionality with this interactive page</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>📋 Live Server Instructions</h2>
+            <div class="status info">
+                <strong>How to Test:</strong><br>
+                1. Open the TodoList IDE (IDE.html)<br>
+                2. Write some HTML, CSS, and JavaScript<br>
+                3. Press <strong>Ctrl + L</strong> or click <strong>"🔴 Go Live"</strong><br>
+                4. Watch your code update in real-time!
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎮 Interactive Tests</h2>
+            <button class="btn" onclick="testConsole()">Test Console</button>
+            <button class="btn" onclick="testAlert()">Test Alert</button>
+            <button class="btn" onclick="changeBackground()">Change Background</button>
+            <button class="btn" onclick="addContent()">Add Content</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Live Server Status</h2>
+            <div id="server-status" class="status info">
+                Checking live server status...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📝 Console Output</h2>
+            <div id="output"></div>
+            <button class="btn" onclick="clearOutput()">Clear Output</button>
+        </div>
+        
+        <div class="test-section" id="dynamic-content">
+            <h2>🔄 Dynamic Content Area</h2>
+            <p>This area will change when you test the live reload functionality.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Test functions
+        function testConsole() {
+            console.log('✅ Console test successful!');
+            console.log('🕐 Timestamp:', new Date().toLocaleTimeString());
+            addOutput('Console test executed - check browser console');
+        }
+        
+        function testAlert() {
+            alert('🎉 Live Server is working! Alert test successful.');
+            addOutput('Alert test executed');
+        }
+        
+        function changeBackground() {
+            const colors = [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+            ];
+            
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            document.body.style.background = randomColor;
+            addOutput('Background changed to: ' + randomColor.substring(0, 50) + '...');
+        }
+        
+        function addContent() {
+            const dynamicArea = document.getElementById('dynamic-content');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const newElement = document.createElement('div');
+            newElement.style.cssText = `
+                background: rgba(255, 255, 255, 0.2);
+                padding: 10px;
+                margin: 10px 0;
+                border-radius: 8px;
+                border-left: 4px solid #4CAF50;
+            `;
+            newElement.innerHTML = `
+                <strong>🆕 New Content Added!</strong><br>
+                <small>Time: ${timestamp}</small>
+            `;
+            
+            dynamicArea.appendChild(newElement);
+            addOutput('New content added at ' + timestamp);
+        }
+        
+        function addOutput(message) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.textContent += `[${timestamp}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').textContent = '';
+            addOutput('Output cleared');
+        }
+        
+        // Check if running in live server
+        function checkLiveServerStatus() {
+            const statusDiv = document.getElementById('server-status');
+            
+            // Check for live server indicators
+            if (window.location.protocol === 'blob:') {
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = '🟢 <strong>Live Server Active!</strong><br>Running via blob URL - perfect for development';
+            } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = '🟢 <strong>Live Server Active!</strong><br>Running on localhost';
+            } else if (window.location.protocol === 'file:') {
+                statusDiv.className = 'status info';
+                statusDiv.innerHTML = '📁 <strong>File Protocol</strong><br>Open via IDE for live server features';
+            } else {
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = '🌐 <strong>Web Server Active!</strong><br>Running on: ' + window.location.origin;
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLiveServerStatus();
+            addOutput('Live server test page loaded');
+            addOutput('Ready for testing!');
+            
+            console.log('🚀 TodoList IDE Live Server Test Page');
+            console.log('📍 URL:', window.location.href);
+            console.log('🔄 Auto-reload should work if opened via IDE');
+        });
+        
+        // Listen for live reload messages
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'live-reload') {
+                addOutput('Live reload signal received!');
+                console.log('🔄 Live reload triggered');
+            }
+        });
+    </script>
+</body>
+</html>

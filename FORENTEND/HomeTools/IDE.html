@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../CSSPAge/IDEPage.css" rel="stylesheet">
+    <title>Todo List - IDE</title>
+</head>
+
+<body>
+    <!-- Sidebar with navigation icons -->
+    <div class="SiderBar">
+        <img class="nav-icon" src="https://img.icons8.com/3d-fluency/375/home.png" alt="home" title="Home" onclick="navigateTo('Home.html')" />
+        <img class="nav-icon" src="https://img.icons8.com/cute-clipart/64/overtime.png" alt="tasks" title="WorkSpace" onclick="navigateTo('WorkSpace.html')" />
+        <img class="nav-icon" src="https://img.icons8.com/3d-fluency/94/tear-off-calendar.png" alt="calendar" title="Schedule" onclick="navigateTo('Schedule.html')" />
+        <img class="nav-icon" src="https://img.icons8.com/3d-fluency/94/gear--v1.png" alt="settings" title="Settings" onclick="navigateTo('Settings.html')" />
+        <img class="nav-icon active" src="https://img.icons8.com/3d-fluency/94/source-code.png" alt="ide" title="IDE" onclick="navigateTo('IDE.html')" />
+    </div>
+
+    <!-- Main IDE content -->
+    <div class="main-content">
+        <div class="ide-header">
+            <h1>Code IDE</h1>
+            <div class="ide-controls">
+                <button class="control-btn" id="newFileBtn">New File</button>
+                <button class="control-btn" id="saveFileBtn">Save</button>
+                <button class="control-btn" id="runCodeBtn">Run Code</button>
+                <button class="control-btn live-server" id="liveServerBtn">🔴 Go Live</button>
+                <select id="languageSelect" class="language-select">
+                    <option value="html">HTML</option>
+                    <option value="css">CSS</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="sql">SQL</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="ide-workspace">
+            <!-- Code Editor Section -->
+            <div class="editor-section">
+                <div class="editor-tabs">
+                    <div class="tab active" data-lang="html">
+                        <span>HTML</span>
+                        <button class="close-tab" onclick="closeTab('html')">×</button>
+                    </div>
+                    <div class="tab" data-lang="css">
+                        <span>CSS</span>
+                        <button class="close-tab" onclick="closeTab('css')">×</button>
+                    </div>
+                    <div class="tab" data-lang="javascript">
+                        <span>JavaScript</span>
+                        <button class="close-tab" onclick="closeTab('javascript')">×</button>
+                    </div>
+                </div>
+
+                <div class="code-editors">
+                    <div class="editor active" id="html-editor">
+                        <div class="editor-header">
+                            <span>HTML Editor</span>
+                            <div class="editor-actions">
+                                <button onclick="formatCode('html')">Format</button>
+                                <button onclick="clearEditor('html')">Clear</button>
+                            </div>
+                        </div>
+                        <textarea 
+                            id="htmlCode" 
+                            placeholder="Enter your HTML code here..."
+                            spellcheck="false"
+                        ></textarea>
+                    </div>
+
+                    <div class="editor" id="css-editor">
+                        <div class="editor-header">
+                            <span>CSS Editor</span>
+                            <div class="editor-actions">
+                                <button onclick="formatCode('css')">Format</button>
+                                <button onclick="clearEditor('css')">Clear</button>
+                            </div>
+                        </div>
+                        <textarea 
+                            id="cssCode" 
+                            placeholder="Enter your CSS code here..."
+                            spellcheck="false"
+                        ></textarea>
+                    </div>
+
+                    <div class="editor" id="javascript-editor">
+                        <div class="editor-header">
+                            <span>JavaScript Editor</span>
+                            <div class="editor-actions">
+                                <button onclick="formatCode('javascript')">Format</button>
+                                <button onclick="clearEditor('javascript')">Clear</button>
+                            </div>
+                        </div>
+                        <textarea 
+                            id="jsCode" 
+                            placeholder="Enter your JavaScript code here..."
+                            spellcheck="false"
+                        ></textarea>
+                    </div>
+
+                    <div class="editor" id="python-editor">
+                        <div class="editor-header">
+                            <span>Python Editor</span>
+                            <div class="editor-actions">
+                                <button onclick="formatCode('python')">Format</button>
+                                <button onclick="clearEditor('python')">Clear</button>
+                            </div>
+                        </div>
+                        <textarea 
+                            id="pythonCode" 
+                            placeholder="Enter your Python code here..."
+                            spellcheck="false"
+                        ></textarea>
+                    </div>
+
+                    <div class="editor" id="sql-editor">
+                        <div class="editor-header">
+                            <span>SQL Editor</span>
+                            <div class="editor-actions">
+                                <button onclick="formatCode('sql')">Format</button>
+                                <button onclick="clearEditor('sql')">Clear</button>
+                            </div>
+                        </div>
+                        <textarea 
+                            id="sqlCode" 
+                            placeholder="Enter your SQL queries here..."
+                            spellcheck="false"
+                        ></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output/Preview Section -->
+            <div class="output-section">
+                <div class="output-tabs">
+                    <button class="output-tab active" onclick="showOutput('preview')">Preview</button>
+                    <button class="output-tab" onclick="showOutput('console')">Console</button>
+                    <button class="output-tab" onclick="showOutput('result')">Result</button>
+                </div>
+
+                <div class="output-content">
+                    <div id="preview-output" class="output active">
+                        <div class="live-server-status" id="liveServerStatus">
+                            <div class="server-info">
+                                <span class="server-indicator offline" id="serverIndicator">●</span>
+                                <span class="server-text" id="serverText">Server Offline</span>
+                                <span class="server-port" id="serverPort"></span>
+                            </div>
+                            <div class="server-actions">
+                                <button class="server-action-btn" id="openBrowserBtn" disabled>Open in Browser</button>
+                                <button class="server-action-btn" id="copyUrlBtn" disabled>Copy URL</button>
+                            </div>
+                        </div>
+                        <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+                    </div>
+
+                    <div id="console-output" class="output">
+                        <div class="console-header">
+                            <span>Console Output</span>
+                            <button onclick="clearConsole()">Clear</button>
+                        </div>
+                        <div id="consoleLog"></div>
+                    </div>
+
+                    <div id="result-output" class="output">
+                        <div class="result-header">
+                            <span>Execution Result</span>
+                            <button onclick="clearResult()">Clear</button>
+                        </div>
+                        <pre id="resultContent"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Manager -->
+        <!-- <div class="file-manager">
+            <div class="file-manager-header">
+                <h3>Saved Projects</h3>
+                <button id="saveProjectBtn">Save Project</button>
+            </div>
+            <div class="saved-files" id="savedFilesList">
+            </div>
+        </div>
+    </div> -->
+
+    <!-- Modals -->
+    <div id="saveModal" class="modal">
+        <div class="modal-content">
+            <h3>Save Project</h3>
+            <input type="text" id="projectName" placeholder="Enter project name...">
+            <div class="modal-actions">
+                <button onclick="saveProject()">Save</button>
+                <button onclick="closeSaveModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/ide.js"></script>
+</body>
+
+</html>
