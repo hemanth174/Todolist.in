@@ -31,6 +31,12 @@ const transporter = nodemailer.createTransport({
 
 // Email helper functions
 async function sendWelcomeEmail(email) {
+    // Skip email sending on Render free tier (SMTP blocked)
+    if (process.env.SKIP_EMAIL === 'true') {
+        console.log(`📧 Email would be sent to: ${email} (skipped on free tier)`);
+        return true;
+    }
+    
     const loginLink = `https://todolist-auth-server.onrender.com`;
     
     const mailOptions = {
@@ -80,6 +86,7 @@ async function sendWelcomeEmail(email) {
         return true;
     } catch (error) {
         console.error('❌ Error sending welcome email:', error);
+        // Don't fail login/registration if email fails
         return false;
     }
 }
