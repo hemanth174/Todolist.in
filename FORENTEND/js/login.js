@@ -24,7 +24,7 @@ loginForm.addEventListener("submit", async (e) => {
       localStorage.setItem("loggedInUser", JSON.stringify(data.user));
 
       // Redirect to dashboard
-      window.location.href = "../FORENTEND/HomeTools/Home.html";
+      window.location.href = "/HomeTools/Home.html";
     } else {
       alert(`❌ ${data.error}`);
     }
