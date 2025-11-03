@@ -31,7 +31,7 @@ const transporter = nodemailer.createTransport({
 
 // Email helper functions
 async function sendWelcomeEmail(email) {
-    const loginLink = `http://localhost:3000`;
+    const loginLink = `https://todolist-auth-server.onrender.com`;
     
     const mailOptions = {
         from: '"Todo List App"',
@@ -280,7 +280,7 @@ app.post('/send-session-expiry', async (req, res) => {
         return res.status(400).json({ message: 'Email address is required' });
     }
 
-    const loginLink = `http://localhost:3000`;
+    const loginLink = `https://todolist-auth-server.onrender.com`;
 
     const mailOptions = {
         from: '"Todo List App" <todolist725@gmail.com>',

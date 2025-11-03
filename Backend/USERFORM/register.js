@@ -15,7 +15,7 @@ signupForm.addEventListener("submit", async (event) => {
   }
 
   try {
-    const response = await fetch("http://localhost:3000/users", {
+    const response = await fetch("https://todolist-auth-server.onrender.com/users", {
       method: "POST",
       headers: {
   "Authorization": "Bearer " + localStorage.getItem("token")
