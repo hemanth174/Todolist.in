@@ -23,6 +23,7 @@
         <div class="header">
             <h1>Welcome to Your Todo List</h1>
             <p>Stay organized and productive!</p>
+            <button id="logoutBtn" style="position: absolute; top: 20px; right: 20px; padding: 10px 20px; background: #ff4757; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;">Logout</button>
         </div>
         
         <div class="todo-container">
@@ -53,6 +54,51 @@
     </div>
 
     <script>
+        // Check authentication on page load
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('loggedInUser');
+            
+            if (!token || !user) {
+                // No token or user info, redirect to login
+                window.location.href = '/REgisterPage.html';
+                return false;
+            }
+            
+            // Display welcome message with user name
+            try {
+                const userData = JSON.parse(user);
+                const header = document.querySelector('.header h1');
+                if (header && userData.name) {
+                    header.textContent = `Welcome back, ${userData.name}!`;
+                }
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+            
+            return true;
+        }
+
+        // Check auth when page loads
+        if (!checkAuth()) {
+            // Stop script execution if not authenticated
+            throw new Error('Not authenticated');
+        }
+
+        // Logout functionality
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                // Clear all stored data
+                localStorage.removeItem('token');
+                localStorage.removeItem('loggedInUser');
+                
+                // Redirect to login page
+                alert('✅ Logged out successfully!');
+                window.location.href = '/REgisterPage.html';
+            });
+        }
+
         // Add click handlers for navigation
         document.querySelectorAll('.nav-icon').forEach(icon => {
             icon.addEventListener('click', function() {
