@@ -1,0 +1,39 @@
+# Netlify Configuration for TodoList Frontend
+
+[build]
+  # Base directory for the build
+  base = "FORENTEND"
+  
+  # No build command needed for static site
+  command = ""
+  
+  # Directory to deploy
+  publish = "FORENTEND"
+
+# Redirect rules (optional - if you want to proxy API calls through Netlify)
+# [[redirects]]
+#   from = "/api/auth/*"
+#   to = "https://todolist-auth-server.onrender.com/:splat"
+#   status = 200
+#   force = true
+#
+# [[redirects]]
+#   from = "/api/tasks/*"
+#   to = "https://todolist-tasks-server.onrender.com/api/tasks/:splat"
+#   status = 200
+#   force = true
+
+# SPA (Single Page App) fallback - redirect all routes to landing page
+[[redirects]]
+  from = "/*"
+  to = "/LandingPage.html"
+  status = 200
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer-when-downgrade"
