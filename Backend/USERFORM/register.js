@@ -18,9 +18,9 @@ signupForm.addEventListener("submit", async (event) => {
     const response = await fetch("https://todolist-auth-server.onrender.com/users", {
       method: "POST",
       headers: {
-  "Authorization": "Bearer " + localStorage.getItem("token")
-},
-
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + localStorage.getItem("token")
+      },
       body: JSON.stringify({ name, email, password }),
     });
 
