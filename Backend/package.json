@@ -8,7 +8,9 @@
     "dev": "nodemon server.js",
     "json-server": "node json-server-simple.js",
     "json-dev": "nodemon json-server-simple.js",
-    "test-server": "node test-server.js"
+    "test-server": "node test-server.js",
+    "build": "npm rebuild sqlite3 --build-from-source",
+    "postinstall": "npm rebuild sqlite3 --build-from-source"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -19,5 +21,8 @@
     "nodemailer": "^6.10.1",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "node-gyp": "^10.0.0"
   }
 }
