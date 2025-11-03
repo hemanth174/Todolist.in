@@ -1,0 +1,32 @@
+# Render.com Deployment Configuration
+
+services:
+  # Authentication Server
+  - type: web
+    name: todolist-auth-server
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd Backend && npm install
+    startCommand: cd Backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+    
+  # Tasks API Server
+  - type: web
+    name: todolist-tasks-server
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd Backend && npm install
+    startCommand: cd Backend && node json-server-simple.js
+    envVars:
+      - key: NODE_ENV
+        value: production

@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -24,8 +24,8 @@ const SECRET_KEY =
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'todolist725@gmail.com', // Replace with your Gmail address
-        pass: 'adap cjfs ohdu suct' // Replace with your Gmail App Password
+        user: process.env.EMAIL_USER || 'todolist725@gmail.com',
+        pass: process.env.EMAIL_PASS || 'adap cjfs ohdu suct'
     }
 });
 

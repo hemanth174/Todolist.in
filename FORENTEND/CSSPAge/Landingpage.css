@@ -259,7 +259,7 @@
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     margin: 20px;
-    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    /* background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); */
     border:2px solid #fff;
     box-shadow: 0 0 10px 5px rgb(163, 158, 158);
     height: auto;
@@ -292,9 +292,20 @@
 }
 
 .brand-text {
-    font-family: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
+   /* font-family: "Brush Script MT", cursive; */
+/* font-family: "Dancing Script", cursive; */
+/* font-family: "Great Vibes", cursive; */
+/* font-family: "Pacifico", cursive; */
+/* font-family: "Satisfy", cursive; */
+/* font-family: "Allura", cursive; */
+/* font-family: "Sacramento", cursive; */
+/* font-family: "Alex Brush", cursive; */
+
+/* font-family: "Yellowtail", cursive; */
+font-family: "Great Vibes", "Brush Script MT", cursive;
+
     font-weight: 600;
-    font-size: 20px;
+    font-size: 40px;
     color: #2c2c2c;
 }
 
@@ -347,16 +358,19 @@
     justify-self: space-between;
     gap: 50px;
     cursor: pointer;
+    font-family: "Courgette", cursive;
     text-decoration: none;
 }
 .navElements p, .Elements p {
     cursor: pointer;
     transition: color 0.3s ease;
+    font-family: "Courgette", cursive;
     text-decoration: none;
 }
 .navElements p:hover, .Elements p:hover {
     color: #A0B2CE;
     text-decoration: none;
+    
 }
 .para5{
     cursor: pointer;
@@ -376,16 +390,36 @@
 }
 .TextElements1> h1{
     font-size: 50px;
-    font-family: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
+    /* font-family: 'Playfair Display', 'Georgia', 'Times New Roman', serif; */
+    /* font-family: "Great Vibes", cursive; */
+    /* font-family: "Playfair Display", serif; */
+/* font-family: "Dancing Script", cursive; */
+/* font-family: "Poppins", sans-serif; */
+/* font-family: "Montserrat", sans-serif; */
+/* font-family: "Raleway", sans-serif; */
+font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     font-weight: 600;
     margin-bottom: 20px;
     color: #2c2c2c;
-    margin-left: 100px;
-    overflow: hidden;
+    margin-left: 150px;
+    /* overflow: hidden; */
     border-right: 3px solid #A0B2CE;
     white-space: nowrap;
-    animation: typewriter 3s steps(40, end), blink 0.75s step-end infinite;
+    animation: typewriter 8s steps(40, end), blink 0.90s step-end infinite;
 }
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink {
+  50% { border-color: transparent; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .TextElements1{
     text-decoration: none;
     color: black;
@@ -423,14 +457,14 @@
     margin-bottom: 100px;
 }
 .Img3{
-    height: 100vh;
+    height: 10vh;
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
     background-color: transparent;
-    margin-left:100px;
+    /* margin-left:100px; */
     margin-top: 50px;
-    border-radius: 300px;
+    /* border-radius: 300px; */
     animation: zoomIn 1.5s ease-out, float 6s ease-in-out infinite 1.5s;
 }
 
@@ -796,12 +830,14 @@ html {
 @media screen and (min-width: 1200px) {
     .TextElements1 > h1 {
         font-size: 60px;
-        margin-left: 120px;
+        /* margin-left: 120px; */
     }
     
     .Img3 {
-        margin-left: 120px;
-        height: 110vh;
+        position: relative;
+        top: 100px;
+        /* margin-right: 200px; */
+        height: 60vh;
     }
 }
 
@@ -813,7 +849,7 @@ html {
     }
     
     .Img3 {
-        margin-left: 80px;
+        /* margin-left: 80px; */
         height: 90vh;
     }
     
