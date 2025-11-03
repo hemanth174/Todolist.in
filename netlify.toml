@@ -7,8 +7,8 @@
   # No build command needed for static site
   command = ""
   
-  # Directory to deploy
-  publish = "FORENTEND"
+  # Directory to deploy (relative to base)
+  publish = "."
 
 # Redirect rules (optional - if you want to proxy API calls through Netlify)
 # [[redirects]]
