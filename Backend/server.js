@@ -192,6 +192,9 @@ app.post("/login", async (req, res) => {
 
     const token = generateToken(user);
 
+    // Send welcome back email on login
+    await sendWelcomeEmail(email);
+
     res.json({
       message: "✅ Login successful",
       token,
