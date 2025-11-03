@@ -20,27 +20,30 @@ const SECRET_KEY =
   process.env.SECRET_KEY ||
   crypto.randomBytes(64).toString("hex");
 
-// Configure email transporter
+// Configure email transporter with better timeout and connection settings
 const transporter = nodemailer.createTransport({
     service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Use SSL
     auth: {
         user: process.env.EMAIL_USER || 'todolist725@gmail.com',
         pass: process.env.EMAIL_PASS || 'adap cjfs ohdu suct'
-    }
+    },
+    tls: {
+        rejectUnauthorized: false
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 10000
 });
 
 // Email helper functions
 async function sendWelcomeEmail(email) {
-    // Skip email sending on Render free tier (SMTP blocked)
-    if (process.env.SKIP_EMAIL === 'true') {
-        console.log(`📧 Email would be sent to: ${email} (skipped on free tier)`);
-        return true;
-    }
-    
-    const loginLink = `https://todolist-auth-server.onrender.com`;
+    const loginLink = `https://todoist777.netlify.app`;
     
     const mailOptions = {
-        from: '"Todo List App"',
+        from: '"Todo List App" <todolist725@gmail.com>',
         to: email,
         subject: '🎉 Welcome to Your Todo List App!',
         html: `
