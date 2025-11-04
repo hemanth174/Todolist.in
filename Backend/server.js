@@ -171,13 +171,12 @@ app.post("/users", async (req, res) => {
       [name, email, hashedPassword]
     );
 
-    // Send welcome email to new user
-    const emailSent = await sendWelcomeEmail(email);
+    // Send welcome email asynchronously (don't wait for it)
+    sendWelcomeEmail(email).catch(err => console.error('Email send failed:', err));
 
     res.status(201).json({
       message: "✅ User created successfully",
-      userId: result.lastID,
-      emailSent: emailSent
+      userId: result.lastID
     });
   } catch (error) {
     if (error.message.includes("UNIQUE constraint failed")) {
@@ -202,8 +201,8 @@ app.post("/login", async (req, res) => {
 
     const token = generateToken(user);
 
-    // Send welcome back email on login
-    await sendWelcomeEmail(email);
+    // Send welcome back email asynchronously (don't block response)
+    sendWelcomeEmail(email).catch(err => console.error('Email send failed:', err));
 
     res.json({
       message: "✅ Login successful",

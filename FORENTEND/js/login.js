@@ -7,6 +7,9 @@ loginForm.addEventListener("submit", async (e) => {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
 
+  // Show loading toast
+  const loadingToast = toast.loading("Signing you in...");
+
   try {
     const response = await fetch("https://todolist-auth-server.onrender.com/login", {
       method: "POST",
@@ -16,20 +19,28 @@ loginForm.addEventListener("submit", async (e) => {
 
     const data = await response.json();
 
-    if (response.ok) {
-      alert(`✅ Welcome back, ${data.user.name}!`);
+    // Hide loading toast
+    toast.hide(loadingToast);
 
+    if (response.ok) {
       // Store token + user info
       localStorage.setItem("token", data.token);
       localStorage.setItem("loggedInUser", JSON.stringify(data.user));
 
-      // Redirect to dashboard
-      window.location.href = "/HomeTools/Home.html";
+      // Show success toast
+      toast.success(`Welcome back, ${data.user.name}! Redirecting...`);
+
+      // Redirect to dashboard after short delay
+      setTimeout(() => {
+        window.location.href = "/HomeTools/Home.html";
+      }, 1000);
     } else {
-      alert(`❌ ${data.error}`);
+      toast.error(data.error || "Login failed. Please check your credentials.");
     }
   } catch (error) {
+    // Hide loading toast
+    toast.hide(loadingToast);
     console.error(error);
-    alert("⚠ Login failed. Please try again later.");
+    toast.error("Unable to connect to server. Please try again later.");
   }
 });

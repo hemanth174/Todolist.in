@@ -10,9 +10,12 @@ signupForm.addEventListener("submit", async (event) => {
   const confirmPassword = document.getElementById("confirmPassword").value.trim();
 
   if (password !== confirmPassword) {
-    alert("⚠ Passwords do not match!");
+    toast.warning("Passwords do not match!");
     return;
   }
+
+  // Show loading toast
+  const loadingToast = toast.loading("Creating your account...");
 
   try {
     const response = await fetch("https://todolist-auth-server.onrender.com/users", {
@@ -26,18 +29,25 @@ signupForm.addEventListener("submit", async (event) => {
 
     const data = await response.json();
 
+    // Hide loading toast
+    toast.hide(loadingToast);
+
     if (response.ok) {
-      alert("🎉 Account created successfully! Please login now.");
+      toast.success("🎉 Account created successfully! Please login now.");
       signupForm.reset();
 
-      // Switch to login form after success
-      document.getElementById("signupSection").classList.remove("active");
-      document.getElementById("loginSection").classList.add("active");
+      // Switch to login form after 1.5 seconds
+      setTimeout(() => {
+        document.getElementById("signupSection").classList.remove("active");
+        document.getElementById("loginSection").classList.add("active");
+      }, 1500);
     } else {
-      alert(`❌ ${data.error}`);
+      toast.error(data.error || "Registration failed. Please try again.");
     }
   } catch (error) {
+    // Hide loading toast
+    toast.hide(loadingToast);
     console.error("Error:", error);
-    alert("⚠ Unable to register. Please try again later.");
+    toast.error("Unable to connect to server. Please try again later.");
   }
 });
