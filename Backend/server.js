@@ -7,7 +7,7 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const sgMail = require('@sendgrid/mail');
 
 const port = process.env.PORT || 3000;
 
@@ -20,78 +20,81 @@ const SECRET_KEY =
   process.env.SECRET_KEY ||
   crypto.randomBytes(64).toString("hex");
 
-// Configure email transporter with better timeout and connection settings
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // Use SSL
-    auth: {
-        user: process.env.EMAIL_USER || 'todolist725@gmail.com',
-        pass: process.env.EMAIL_PASS || 'adap cjfs ohdu suct'
-    },
-    tls: {
-        rejectUnauthorized: false
-    },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 10000
-});
+// Configure SendGrid
+if (process.env.SENDGRID_API_KEY) {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    console.log('✅ SendGrid configured successfully');
+} else {
+    console.warn('⚠️  SENDGRID_API_KEY not found - emails will not be sent');
+}
 
 // Email helper functions
-async function sendWelcomeEmail(email) {
-    const loginLink = `https://todoist777.netlify.app`;
-    
-    const mailOptions = {
-        from: '"Todo List App" <todolist725@gmail.com>',
-        to: email,
-        subject: '🎉 Welcome to Your Todo List App!',
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 15px; background: linear-gradient(135deg, #6a5af9 0%, #5848e8 100%);">
-                <div style="background: white; padding: 30px; border-radius: 10px;">
-                    <h2 style="text-align: center; color: #333; margin-bottom: 20px;">🎉 Welcome to Todo List App!</h2>
-                    
-                    <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello and welcome!</p>
-                    
-                    <p style="font-size: 16px; color: #555; line-height: 1.6;">
-                        Thank you for joining our Todo List app! You're now ready to organize your tasks and boost your productivity.
-                    </p>
-                    
-                    <div style="background: #f0f8ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6a5af9;">
-                        <h3 style="color: #6a5af9; margin-top: 0;">🚀 Get Started</h3>
-                        <ul style="color: #666; margin: 0; padding-left: 20px;">
-                            <li>Add your first task</li>
-                            <li>Mark tasks as completed</li>
-                            <li>Stay organized and productive</li>
-                        </ul>
-                    </div>
-                    
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="${loginLink}" style="background-color: #6a5af9; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(106, 90, 249, 0.3);">
-                            🏠 Go to App
-                        </a>
-                    </div>
-                    
-                    <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
-                    
-                    <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
-                        Happy organizing!<br>
-                        <strong>The Todo App Team</strong>
-                    </p>
-                </div>
-            </div>
-        `
+async function sendEmail(to, subject, html) {
+    if (!process.env.SENDGRID_API_KEY) {
+        console.log(`📧 Email skipped (no SendGrid key): ${to}`);
+        return false;
+    }
+
+    const msg = {
+        to: to,
+        from: {
+            email: 'todolist725@gmail.com',
+            name: 'Todo List App'
+        },
+        subject: subject,
+        html: html
     };
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log(`✅ Welcome email sent successfully to: ${email}`);
+        await sgMail.send(msg);
+        console.log(`✅ Email sent successfully to: ${to}`);
         return true;
     } catch (error) {
-        console.error('❌ Error sending welcome email:', error);
-        // Don't fail login/registration if email fails
+        console.error('❌ Error sending email:', error.response ? error.response.body : error);
         return false;
     }
+}
+
+async function sendWelcomeEmail(email) {
+    const loginLink = `https://todoist777.netlify.app`;
+    
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 15px; background: linear-gradient(135deg, #6a5af9 0%, #5848e8 100%);">
+            <div style="background: white; padding: 30px; border-radius: 10px;">
+                <h2 style="text-align: center; color: #333; margin-bottom: 20px;">🎉 Welcome to Todo List App!</h2>
+                
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello and welcome!</p>
+                
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">
+                    Thank you for joining our Todo List app! You're now ready to organize your tasks and boost your productivity.
+                </p>
+                
+                <div style="background: #f0f8ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6a5af9;">
+                    <h3 style="color: #6a5af9; margin-top: 0;">🚀 Get Started</h3>
+                    <ul style="color: #666; margin: 0; padding-left: 20px;">
+                        <li>Add your first task</li>
+                        <li>Mark tasks as completed</li>
+                        <li>Stay organized and productive</li>
+                    </ul>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${loginLink}" style="background-color: #6a5af9; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(106, 90, 249, 0.3);">
+                        🏠 Go to App
+                    </a>
+                </div>
+                
+                <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
+                
+                <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
+                    Happy organizing!<br>
+                    <strong>The Todo App Team</strong>
+                </p>
+            </div>
+        </div>
+    `;
+
+    return await sendEmail(email, '🎉 Welcome to Your Todo List App!', html);
 }
 
 
@@ -292,64 +295,58 @@ app.post('/send-session-expiry', async (req, res) => {
         return res.status(400).json({ message: 'Email address is required' });
     }
 
-    const loginLink = `https://todolist-auth-server.onrender.com`;
+    const loginLink = `https://todoist777.netlify.app`;
 
-    const mailOptions = {
-        from: '"Todo List App" <todolist725@gmail.com>',
-        to: email,
-        subject: '🔔 Your Todo List Session Has Expired - Please Login Again',
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div style="background: white; padding: 30px; border-radius: 10px;">
-                    <h2 style="text-align: center; color: #333; margin-bottom: 20px;">📋 Todo List App - Session Expired</h2>
-                    
-                    <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello there!</p>
-                    
-                    <p style="font-size: 16px; color: #555; line-height: 1.6;">
-                        We noticed that you haven't opened your Todo List app for more than 3 days. 
-                        For security reasons, your session has automatically expired.
-                    </p>
-                    
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6a5af9;">
-                        <h3 style="color: #6a5af9; margin-top: 0;">🔐 Security Notice</h3>
-                        <p style="margin: 0; color: #666;">Your account and todos are safe! This is just an automatic security measure to keep your data protected.</p>
-                    </div>
-                    
-                    <p style="font-size: 16px; color: #555; line-height: 1.6;">
-                        To continue using your Todo List app, please log in again by clicking the button below:
-                    </p>
-                    
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="${loginLink}" style="background-color: #6a5af9; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(106, 90, 249, 0.3);">
-                            🔑 Login Again
-                        </a>
-                    </div>
-                    
-                    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                        <p style="margin: 0; color: #28a745; font-weight: 500;">✅ Your todos are still saved and waiting for you!</p>
-                    </div>
-                    
-                    <p style="font-size: 14px; color: #888; line-height: 1.6;">
-                        If you didn't expect this email or have any concerns, please contact our support team.
-                    </p>
-                    
-                    <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
-                    
-                    <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
-                        Thanks for using Todo List App!<br>
-                        <strong>The Todo App Team</strong>
-                    </p>
+    const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div style="background: white; padding: 30px; border-radius: 10px;">
+                <h2 style="text-align: center; color: #333; margin-bottom: 20px;">📋 Todo List App - Session Expired</h2>
+                
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello there!</p>
+                
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">
+                    We noticed that you haven't opened your Todo List app for more than 3 days. 
+                    For security reasons, your session has automatically expired.
+                </p>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6a5af9;">
+                    <h3 style="color: #6a5af9; margin-top: 0;">🔐 Security Notice</h3>
+                    <p style="margin: 0; color: #666;">Your account and todos are safe! This is just an automatic security measure to keep your data protected.</p>
                 </div>
+                
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">
+                    To continue using your Todo List app, please log in again by clicking the button below:
+                </p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${loginLink}" style="background-color: #6a5af9; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(106, 90, 249, 0.3);">
+                        🔑 Login Again
+                    </a>
+                </div>
+                
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0; color: #28a745; font-weight: 500;">✅ Your todos are still saved and waiting for you!</p>
+                </div>
+                
+                <p style="font-size: 14px; color: #888; line-height: 1.6;">
+                    If you didn't expect this email or have any concerns, please contact our support team.
+                </p>
+                
+                <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
+                
+                <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
+                    Thanks for using Todo List App!<br>
+                    <strong>The Todo App Team</strong>
+                </p>
             </div>
-        `
-    };
+        </div>
+    `;
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log(`✅ Session expiry email sent successfully to: ${email}`);
+    const success = await sendEmail(email, '🔔 Your Todo List Session Has Expired - Please Login Again', htmlContent);
+    
+    if (success) {
         res.status(200).json({ message: 'Session expiry notification sent successfully!' });
-    } catch (error) {
-        console.error('❌ Error sending session expiry email:', error);
+    } else {
         res.status(500).json({ message: 'Failed to send session expiry email. Please try again later.' });
     }
 });

@@ -40,19 +40,15 @@
                         <p data-scroll="aboutSection">About Us</p>
                         <p data-scroll="supportSection">Support</p>
                     </div>
-                    <div class = "navElements">
-                        <a class="para5" href="./REgisterPage.html">
-                        <p class="para5">Login</p>
-                        </a>
-                        <p class="para5">Sign Up</p>
-                        
+                    <div class = "navElements" id="navButtons">
+                        <!-- Will be populated by JavaScript based on login status -->
                     </div>
                 </div>
             </nav>
         <div id="homeSection" class = "FirstPage">
                         <div class = "TextElements1 col-12 col-md-6 md-6 sm-12 xs-12 ">
                             <h1>Organize Your Life, One at a Time</h1>
-                            <button class = "button1">Get Started Free</button>
+                            <button class = "button1" id="mainCTA">Get Started Free</button>
                         </div>
             <div class  ="Img2">
                 <img class  ="Img3" src = "Img2.png" alt = "Img1">
@@ -308,6 +304,54 @@
             }
             window.addEventListener('scroll', updateActiveNav);
             updateActiveNav();
+
+            // Check if user is logged in and update UI accordingly
+            function checkLoginStatus() {
+                const token = localStorage.getItem('token');
+                const user = JSON.parse(localStorage.getItem('loggedInUser') || 'null');
+                const navButtons = document.getElementById('navButtons');
+                const mainCTA = document.getElementById('mainCTA');
+
+                if (token && user) {
+                    // User is logged in - show dashboard button
+                    navButtons.innerHTML = `
+                        <a href="./HomeTools/Home.html" style="text-decoration: none;">
+                            <p class="para5" style="background: #6a5af9; color: white; padding: 10px 20px; border-radius: 8px;">
+                                Go to Dashboard
+                            </p>
+                        </a>
+                        <p class="para5" id="logoutBtn" style="cursor: pointer; color: #ef4444;">Logout</p>
+                    `;
+
+                    // Update main CTA button
+                    mainCTA.textContent = 'Go to Dashboard';
+                    mainCTA.onclick = () => window.location.href = './HomeTools/Home.html';
+
+                    // Add logout functionality
+                    document.getElementById('logoutBtn').addEventListener('click', function() {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('loggedInUser');
+                        window.location.reload();
+                    });
+                } else {
+                    // User is not logged in - show login/signup buttons
+                    navButtons.innerHTML = `
+                        <a class="para5" href="./REgisterPage.html" style="text-decoration: none;">
+                            <p class="para5">Login</p>
+                        </a>
+                        <a class="para5" href="./REgisterPage.html" style="text-decoration: none;">
+                            <p class="para5">Sign Up</p>
+                        </a>
+                    `;
+
+                    // Update main CTA button
+                    mainCTA.textContent = 'Get Started Free';
+                    mainCTA.onclick = () => window.location.href = './REgisterPage.html';
+                }
+            }
+
+            // Run on page load
+            checkLoginStatus();
         });
     </script>
     
