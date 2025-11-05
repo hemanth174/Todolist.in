@@ -416,7 +416,7 @@
                 const targetList = ev.currentTarget;
                 const targetColumn = targetList.closest('.board-column');
                 const newStatus = targetColumn.dataset.status;
-                const taskId = parseInt(draggedElement.dataset.taskId);
+                const taskId = draggedElement.dataset.taskId; // Keep as string for MongoDB ObjectId
                 
                 try {
                     // Update task in API
