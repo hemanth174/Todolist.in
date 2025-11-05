@@ -1,5 +1,13 @@
-// API Configuration
-const API_BASE_URL = 'http://localhost:3001/api';
+// API Configuration - Auto-detect environment
+const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+// Use production Task Server on Render (deploy this first!)
+const API_BASE_URL = isLocalhost 
+    ? 'http://localhost:3001/api'
+    : 'https://todolist-task-server.onrender.com/api';
+
+console.log('🔧 Task API URL:', API_BASE_URL);
 
 // API Helper Class
 class TaskAPI {
@@ -193,9 +201,21 @@ class TaskManager {
     // Load tasks from API
     async loadTasks() {
         try {
-            const response = await this.api.getTasks();
+            // Get logged in user ID
+            const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+            const userId = user.id;
+            
+            if (!userId) {
+                console.warn('⚠️ No user ID found. User might not be logged in.');
+                this.tasks = [];
+                return this.tasks;
+            }
+            
+            // Fetch tasks filtered by userId
+            const response = await this.api.getTasks({ userId });
             this.tasks = response.data || [];
             this.saveTasksToStorage();
+            console.log(`✅ Loaded ${this.tasks.length} tasks for user ${userId}`);
             return this.tasks;
         } catch (error) {
             console.error('Failed to load tasks from API:', error);
@@ -207,17 +227,32 @@ class TaskManager {
     // Create new task
     async createTask(taskData) {
         try {
+            // Get logged in user ID
+            const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+            const userId = user.id;
+            
+            if (!userId) {
+                throw new Error('User not logged in. Cannot create task.');
+            }
+            
+            // Add userId to task data
+            const taskWithUser = {
+                ...taskData,
+                userId: userId.toString()
+            };
+            
             if (this.isOnline) {
-                const response = await this.api.createTask(taskData);
+                const response = await this.api.createTask(taskWithUser);
                 const newTask = response.data;
                 this.tasks.push(newTask);
                 this.saveTasksToStorage();
+                console.log('✅ Task created:', newTask);
                 return newTask;
             } else {
                 // Offline mode - create task locally
                 const newTask = {
                     id: Date.now(),
-                    ...taskData,
+                    ...taskWithUser,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     _offline: true
