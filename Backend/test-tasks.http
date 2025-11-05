@@ -1,0 +1,38 @@
+### Health Check
+GET http://localhost:3001/health
+
+### Create a Test Task
+POST http://localhost:3001/api/tasks
+Content-Type: application/json
+
+{
+  "title": "My First MongoDB Task",
+  "description": "Testing MongoDB Atlas connection",
+  "priority": "high",
+  "status": "todo",
+  "userId": "1",
+  "tags": ["test", "mongodb"]
+}
+
+### Get All Tasks
+GET http://localhost:3001/api/tasks?userId=1
+
+### Get Tasks by Status
+GET http://localhost:3001/api/tasks?userId=1&status=todo
+
+### Get Dashboard Stats
+GET http://localhost:3001/api/stats/dashboard?userId=1
+
+### Create a Project
+POST http://localhost:3001/api/projects
+Content-Type: application/json
+
+{
+  "name": "Personal Projects",
+  "description": "My personal todo items",
+  "color": "#6a5af9",
+  "userId": "1"
+}
+
+### Get All Projects
+GET http://localhost:3001/api/projects?userId=1
