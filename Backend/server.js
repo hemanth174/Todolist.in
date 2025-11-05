@@ -65,7 +65,7 @@ async function sendWelcomeEmail(email) {
                 
                 <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello and welcome!</p>
                 
-                <p style="font-size: 16px; color: #555; line-height: 1.6;">
+                <p style="font-size: 16px; color: #5565; line-height: 1.6;">
                     Thank you for joining our Todo List app! You're now ready to organize your tasks and boost your productivity.
                 </p>
                 
