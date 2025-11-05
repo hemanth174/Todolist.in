@@ -38,8 +38,8 @@ async function sendEmail(to, subject, html) {
     const msg = {
         to: to,
         from: {
-            email: 'todolist725@gmail.com',
-            name: 'Todo List App'
+            email: 'atthulurihemanthramasai777@gmail.com',
+            name: 'TodoList App'
         },
         subject: subject,
         html: html
