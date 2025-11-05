@@ -32,7 +32,14 @@ const TaskSchema = new mongoose.Schema({
     completedAt: { type: Date, default: null },
     userId: { type: String, required: true } // Link to auth user
 }, { 
-    timestamps: true // Automatically adds createdAt and updatedAt
+    timestamps: true, // Automatically adds createdAt and updatedAt
+    toJSON: { virtuals: true }, // Include virtuals when converting to JSON
+    toObject: { virtuals: true }
+});
+
+// Add virtual 'id' field that maps to '_id'
+TaskSchema.virtual('id').get(function() {
+    return this._id.toHexString();
 });
 
 const ProjectSchema = new mongoose.Schema({
@@ -41,7 +48,13 @@ const ProjectSchema = new mongoose.Schema({
     color: { type: String, default: '#667eea' },
     userId: { type: String, required: true }
 }, { 
-    timestamps: true 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+
+ProjectSchema.virtual('id').get(function() {
+    return this._id.toHexString();
 });
 
 const CategorySchema = new mongoose.Schema({
@@ -49,7 +62,13 @@ const CategorySchema = new mongoose.Schema({
     color: { type: String, default: '#667eea' },
     userId: { type: String, required: true }
 }, { 
-    timestamps: true 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+
+CategorySchema.virtual('id').get(function() {
+    return this._id.toHexString();
 });
 
 // Create Models
