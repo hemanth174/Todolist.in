@@ -284,8 +284,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-cancel" onclick="closeTaskModal()">Cancel</button>
-                <button class="btn-create" onclick="createTask()">Create Task</button>
+                <button type="button" class="btn-cancel" onclick="closeTaskModal()">Cancel</button>
+                <button type="button" class="btn-create" onclick="createTask()">Create Task</button>
             </div>
         </div>
     </div>
@@ -553,7 +553,13 @@
             }
         }
 
-        async function createTask() {
+        async function createTask(event) {
+            // Prevent any default form submission or navigation
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
             console.log('Create task function called'); // Debug log
             
             // Prevent double submission
