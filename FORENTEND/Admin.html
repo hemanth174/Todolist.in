@@ -267,6 +267,9 @@
         <div class="login-header">
             <h1>🔐 Admin Login</h1>
             <p>Secure access to admin dashboard</p>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: #667eea;">
+                💡 Password is current time (e.g., 9:30 = 930, 14:45 = 1445)
+            </p>
         </div>
 
         <div class="error-message" id="errorMessage"></div>
@@ -354,14 +357,30 @@
             ? 'http://localhost:3000'
             : 'https://todolist-auth-server.onrender.com';
 
+        // Generate time-based password (e.g., 9:30 AM = 930, 14:45 = 1445)
+        function generateTimePassword() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            // Format: remove colon, e.g., 9:30 -> 930, 14:45 -> 1445
+            return `${hours}${minutes.toString().padStart(2, '0')}`;
+        }
+
         // Check if already logged in as admin
         function checkAdminAuth() {
-            const adminToken = sessionStorage.getItem('adminToken');
+            const adminLoggedIn = sessionStorage.getItem('adminLoggedIn');
             const adminEmail = sessionStorage.getItem('adminEmail');
+            const loginTime = sessionStorage.getItem('adminLoginTime');
             
-            if (adminToken && adminEmail === ADMIN_EMAIL) {
-                showDashboard();
-                return true;
+            // Check if logged in within last 2 hours
+            if (adminLoggedIn === 'true' && adminEmail === ADMIN_EMAIL) {
+                if (loginTime) {
+                    const timeDiff = Date.now() - parseInt(loginTime);
+                    if (timeDiff < 2 * 60 * 60 * 1000) { // 2 hours
+                        showDashboard();
+                        return true;
+                    }
+                }
             }
             return false;
         }
@@ -377,7 +396,7 @@
         }
 
         // Login handler
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
 
             const email = document.getElementById('adminEmail').value;
@@ -391,32 +410,25 @@
             }
 
             loginBtn.disabled = true;
-            loginBtn.textContent = '🔄 Logging in...';
+            loginBtn.textContent = '🔄 Verifying...';
 
-            try {
-                // Login using regular user API
-                const response = await fetch(`${API_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+            // Generate current time password
+            const correctPassword = generateTimePassword();
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Store admin credentials
-                    sessionStorage.setItem('adminToken', data.token);
-                    sessionStorage.setItem('adminEmail', email);
-                    
-                    // Show dashboard
-                    showDashboard();
-                } else {
-                    showError('❌ ' + (data.error || 'Invalid credentials'));
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                showError('❌ Connection error. Please try again.');
-            } finally {
+            // Verify password matches current time
+            if (password === correctPassword) {
+                // Store admin credentials
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                sessionStorage.setItem('adminEmail', email);
+                sessionStorage.setItem('adminLoginTime', Date.now().toString());
+                
+                // Show dashboard
+                showDashboard();
+            } else {
+                // Show helpful error with current time hint
+                const now = new Date();
+                const timeHint = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+                showError(`❌ Invalid password! Hint: Current time is ${timeHint} (use ${correctPassword})`);
                 loginBtn.disabled = false;
                 loginBtn.textContent = '🚀 Login to Dashboard';
             }
@@ -439,15 +451,20 @@
 
         // Logout
         function logout() {
-            sessionStorage.removeItem('adminToken');
+            sessionStorage.removeItem('adminLoggedIn');
             sessionStorage.removeItem('adminEmail');
+            sessionStorage.removeItem('adminLoginTime');
             location.reload();
         }
 
         // Load stats
         async function loadStats() {
             try {
-                const token = sessionStorage.getItem('adminToken');
+                const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+                const token = localStorage.getItem('token');
+                
+                if (!token) return;
+
                 const response = await fetch(`${API_URL}/notifications/user-count`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -465,7 +482,10 @@
         // Load notification history
         async function loadHistory() {
             try {
-                const token = sessionStorage.getItem('adminToken');
+                const token = localStorage.getItem('token');
+                
+                if (!token) return;
+
                 const response = await fetch(`${API_URL}/notifications/history`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -516,7 +536,15 @@
             sendBtn.textContent = '📤 Sending...';
 
             try {
-                const token = sessionStorage.getItem('adminToken');
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    alert('❌ Please login to your regular account first to use admin features');
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = '📤 Send Notification';
+                    return;
+                }
+
                 const response = await fetch(`${API_URL}/notifications/send`, {
                     method: 'POST',
                     headers: {
