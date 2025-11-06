@@ -15,6 +15,7 @@
         <img class="nav-icon" src="https://img.icons8.com/cute-clipart/64/overtime.png" alt="tasks" title="WorkSpace" onclick="navigateTo('WorkSpace.html')" />
         <img class="nav-icon" src="https://img.icons8.com/3d-fluency/94/tear-off-calendar.png" alt="calendar" title="Schedule" onclick="navigateTo('Schedule.html')" />
         <img class="nav-icon" src="https://img.icons8.com/3d-fluency/94/source-code.png" alt="ide" title="IDE" onclick="navigateTo('IDE.html')" />
+        <img class="nav-icon" src="https://img.icons8.com/3d-fluency/94/admin-settings-male.png" alt="admin" title="Admin Dashboard" onclick="navigateTo('Admin.html')" />
         <img class="nav-icon active" src="https://img.icons8.com/3d-fluency/94/gear--v1.png" alt="settings" title="Settings" onclick="navigateTo('Settings.html')" />
     </div>
 
@@ -107,6 +108,15 @@
                             <option value="60">1 hour before</option>
                             <option value="120">2 hours before</option>
                         </select>
+                    </div>
+
+                    <div class="setting-item" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e8f2ff;">
+                        <label>🔔 Browser Push Notifications</label>
+                        <p style="font-size: 0.9rem; color: #666; margin: 10px 0;">Enable push notifications to receive updates even when the app is closed.</p>
+                        <button id="enableNotificationsBtn" class="btn-primary" style="margin-top: 10px;">
+                            🔔 Enable Notifications
+                        </button>
+                        <span id="notificationStatus" style="display: none; color: #4caf50; margin-left: 10px; font-weight: 600;">✅ Enabled</span>
                     </div>
                 </div>
             </div>
@@ -645,6 +655,88 @@
             }, 3000);
         }
 
+        // ==================== PUSH NOTIFICATIONS ====================
+        
+        // Check notification permission status
+        async function checkNotificationPermission() {
+            if (!('Notification' in window)) {
+                document.getElementById('enableNotificationsBtn').disabled = true;
+                document.getElementById('enableNotificationsBtn').textContent = '❌ Not Supported';
+                return;
+            }
+
+            if (Notification.permission === 'granted') {
+                document.getElementById('enableNotificationsBtn').style.display = 'none';
+                document.getElementById('notificationStatus').style.display = 'inline';
+            }
+        }
+
+        // Request notification permission
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                showToast('❌ Browser notifications are not supported', 'error');
+                return;
+            }
+
+            try {
+                const permission = await Notification.requestPermission();
+                
+                if (permission === 'granted') {
+                    showToast('✅ Notifications enabled successfully!', 'success');
+                    document.getElementById('enableNotificationsBtn').style.display = 'none';
+                    document.getElementById('notificationStatus').style.display = 'inline';
+                    
+                    // Subscribe to push notifications
+                    await subscribeToPushNotifications();
+                    
+                    // Show a test notification
+                    new Notification('🎉 Notifications Enabled!', {
+                        body: 'You will now receive important updates from Todo List App',
+                        icon: 'https://img.icons8.com/3d-fluency/94/checked--v1.png'
+                    });
+                } else if (permission === 'denied') {
+                    showToast('❌ Notification permission denied', 'error');
+                } else {
+                    showToast('⚠️ Notification permission dismissed', 'error');
+                }
+            } catch (error) {
+                console.error('Notification permission error:', error);
+                showToast('❌ Failed to enable notifications', 'error');
+            }
+        }
+
+        // Subscribe to push notifications
+        async function subscribeToPushNotifications() {
+            try {
+                // For now, we'll just save the subscription info
+                // In production, you would use Service Workers and Web Push API
+                const token = localStorage.getItem('token');
+                const subscription = {
+                    endpoint: 'browser-notification',
+                    p256dh: 'dummy-key',
+                    auth: 'dummy-auth'
+                };
+
+                const response = await fetch(`${API_URL}/notifications/subscribe`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(subscription)
+                });
+
+                if (response.ok) {
+                    console.log('Subscribed to push notifications');
+                }
+            } catch (error) {
+                console.error('Subscribe error:', error);
+            }
+        }
+
+        // Add event listener for notification button
+        document.getElementById('enableNotificationsBtn')?.addEventListener('click', requestNotificationPermission);
+
         // ==================== PAGE INITIALIZATION ====================
         
         // Check if user is logged in
@@ -667,6 +759,7 @@
             loadUserProfile();
             loadSettings();
             loadActiveDevices();
+            checkNotificationPermission();
         });
     </script>
     

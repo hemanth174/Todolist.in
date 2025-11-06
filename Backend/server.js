@@ -218,6 +218,30 @@ const initializeDBAndServer = async () => {
       )
     `);
 
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS notification_subscriptions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        endpoint TEXT NOT NULL,
+        p256dh TEXT NOT NULL,
+        auth TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS push_notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        message TEXT NOT NULL,
+        target_users TEXT DEFAULT 'all',
+        sent_by INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sent_by) REFERENCES users(id)
+      )
+    `);
+
     console.log("Database and tables initialized successfully");
 
     app.listen(port, () => {
@@ -548,69 +572,69 @@ app.post("/users/:userId/logout-all-except-current", authenticateToken, async (r
 
 // --- EMAIL NOTIFICATION ENDPOINTS ---
 
-// 📧 Send session expiry notification (DISABLED - No emails on login/session changes)
-// app.post('/send-session-expiry', async (req, res) => {
-//     const { email } = req.body;
+// 📧 Send session expiry notification (RE-ENABLED for session expiry only)
+app.post('/send-session-expiry', async (req, res) => {
+    const { email } = req.body;
 
-//     if (!email) {
-//         return res.status(400).json({ message: 'Email address is required' });
-//     }
+    if (!email) {
+        return res.status(400).json({ message: 'Email address is required' });
+    }
 
-//     const loginLink = `https://todoist777.netlify.app`;
+    const loginLink = `https://todoist777.netlify.app`;
 
-//     const htmlContent = `
-//         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-//             <div style="background: white; padding: 30px; border-radius: 10px;">
-//                 <h2 style="text-align: center; color: #333; margin-bottom: 20px;">📋 Todo List App - Session Expired</h2>
-//                 
-//                 <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello there!</p>
-//                 
-//                 <p style="font-size: 16px; color: #555; line-height: 1.6;">
-//                     We noticed that you haven't opened your Todo List app for more than 3 days. 
-//                     For security reasons, your session has automatically expired.
-//                 </p>
-//                 
-//                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6a5af9;">
-//                     <h3 style="color: #6a5af9; margin-top: 0;">🔐 Security Notice</h3>
-//                     <p style="margin: 0; color: #666;">Your account and todos are safe! This is just an automatic security measure to keep your data protected.</p>
-//                 </div>
-//                 
-//                 <p style="font-size: 16px; color: #555; line-height: 1.6;">
-//                     To continue using your Todo List app, please log in again by clicking the button below:
-//                 </p>
-//                 
-//                 <div style="text-align: center; margin: 30px 0;">
-//                     <a href="${loginLink}" style="background-color: #6a5af9; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(106, 90, 249, 0.3);">
-//                         🔑 Login Again
-//                     </a>
-//                 </div>
-//                 
-//                 <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
-//                     <p style="margin: 0; color: #28a745; font-weight: 500;">✅ Your todos are still saved and waiting for you!</p>
-//                 </div>
-//                 
-//                 <p style="font-size: 14px; color: #888; line-height: 1.6;">
-//                     If you didn't expect this email or have any concerns, please contact our support team.
-//                 </p>
-//                 
-//                 <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
-//                 
-//                 <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
-//                     Thanks for using Todo List App!<br>
-//                     <strong>The Todo App Team</strong>
-//                 </p>
-//             </div>
-//         </div>
-//     `;
+    const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div style="background: white; padding: 30px; border-radius: 10px;">
+                <h2 style="text-align: center; color: #333; margin-bottom: 20px;">📋 Todo List App - Session Expired</h2>
+                
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello there!</p>
+                
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">
+                    We noticed that you haven't opened your Todo List app for more than 3 days. 
+                    For security reasons, your session has automatically expired.
+                </p>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6a5af9;">
+                    <h3 style="color: #6a5af9; margin-top: 0;">🔐 Security Notice</h3>
+                    <p style="margin: 0; color: #666;">Your account and todos are safe! This is just an automatic security measure to keep your data protected.</p>
+                </div>
+                
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">
+                    To continue using your Todo List app, please log in again by clicking the button below:
+                </p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${loginLink}" style="background-color: #6a5af9; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(106, 90, 249, 0.3);">
+                        🔑 Login Again
+                    </a>
+                </div>
+                
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0; color: #28a745; font-weight: 500;">✅ Your todos are still saved and waiting for you!</p>
+                </div>
+                
+                <p style="font-size: 14px; color: #888; line-height: 1.6;">
+                    If you didn't expect this email or have any concerns, please contact our support team.
+                </p>
+                
+                <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
+                
+                <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
+                    Thanks for using Todo List App!<br>
+                    <strong>The Todo App Team</strong>
+                </p>
+            </div>
+        </div>
+    `;
 
-//     const success = await sendEmail(email, '🔔 Your Todo List Session Has Expired - Please Login Again', htmlContent);
-//     
-//     if (success) {
-//         res.status(200).json({ message: 'Session expiry notification sent successfully!' });
-//     } else {
-//         res.status(500).json({ message: 'Failed to send session expiry email. Please try again later.' });
-//     }
-// });
+    const success = await sendEmail(email, '🔔 Your Todo List Session Has Expired - Please Login Again', htmlContent);
+    
+    if (success) {
+        res.status(200).json({ message: 'Session expiry notification sent successfully!' });
+    } else {
+        res.status(500).json({ message: 'Failed to send session expiry email. Please try again later.' });
+    }
+});
 
 // --- Endpoint to send reminder email for inactive users (DISABLED) ---
 // app.post('/send-reminder-email', async (req, res) => {
@@ -691,6 +715,132 @@ app.post('/send-task-reminder', authenticateToken, async (req, res) => {
         res.status(200).json({ message: 'Task reminder sent successfully!' });
     } else {
         res.status(500).json({ message: 'Failed to send task reminder. Please try again later.' });
+    }
+});
+
+// ==================== NOTIFICATION ENDPOINTS ====================
+
+// 🔔 Subscribe to push notifications
+app.post('/notifications/subscribe', authenticateToken, async (req, res) => {
+    try {
+        const { endpoint, p256dh, auth } = req.body;
+        const userId = req.user.id;
+
+        if (!endpoint || !p256dh || !auth) {
+            return res.status(400).json({ error: 'Missing subscription data' });
+        }
+
+        // Check if subscription already exists
+        const existing = await db.get(
+            'SELECT id FROM notification_subscriptions WHERE user_id = ? AND endpoint = ?',
+            [userId, endpoint]
+        );
+
+        if (existing) {
+            return res.json({ message: 'Already subscribed', success: true });
+        }
+
+        // Save subscription
+        await db.run(
+            `INSERT INTO notification_subscriptions (user_id, endpoint, p256dh, auth) 
+             VALUES (?, ?, ?, ?)`,
+            [userId, endpoint, p256dh, auth]
+        );
+
+        res.json({ message: 'Subscribed successfully', success: true });
+    } catch (error) {
+        console.error('Subscribe error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 🔕 Unsubscribe from push notifications
+app.post('/notifications/unsubscribe', authenticateToken, async (req, res) => {
+    try {
+        const { endpoint } = req.body;
+        const userId = req.user.id;
+
+        await db.run(
+            'DELETE FROM notification_subscriptions WHERE user_id = ? AND endpoint = ?',
+            [userId, endpoint]
+        );
+
+        res.json({ message: 'Unsubscribed successfully', success: true });
+    } catch (error) {
+        console.error('Unsubscribe error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 📢 Send push notification (Admin only - simplified for now)
+app.post('/notifications/send', authenticateToken, async (req, res) => {
+    try {
+        const { title, message, targetUsers } = req.body;
+        const sentBy = req.user.id;
+
+        if (!title || !message) {
+            return res.status(400).json({ error: 'Title and message are required' });
+        }
+
+        // Save notification to database
+        await db.run(
+            `INSERT INTO push_notifications (title, message, target_users, sent_by) 
+             VALUES (?, ?, ?, ?)`,
+            [title, message, targetUsers || 'all', sentBy]
+        );
+
+        // Get all active subscriptions
+        let subscriptions;
+        if (targetUsers === 'all') {
+            subscriptions = await db.all('SELECT * FROM notification_subscriptions');
+        } else {
+            // Can implement specific user targeting later
+            subscriptions = await db.all('SELECT * FROM notification_subscriptions');
+        }
+
+        res.json({ 
+            message: 'Notification sent successfully', 
+            success: true,
+            recipientCount: subscriptions.length
+        });
+    } catch (error) {
+        console.error('Send notification error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 📊 Get notification history (Admin)
+app.get('/notifications/history', authenticateToken, async (req, res) => {
+    try {
+        const notifications = await db.all(
+            `SELECT n.*, u.name as sent_by_name, u.email as sent_by_email 
+             FROM push_notifications n 
+             LEFT JOIN users u ON n.sent_by = u.id 
+             ORDER BY n.created_at DESC 
+             LIMIT 50`
+        );
+
+        res.json({ notifications, success: true });
+    } catch (error) {
+        console.error('Get history error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 📊 Get user count for push notifications
+app.get('/notifications/user-count', authenticateToken, async (req, res) => {
+    try {
+        const totalUsers = await db.get('SELECT COUNT(*) as count FROM users');
+        const subscribedUsers = await db.get('SELECT COUNT(DISTINCT user_id) as count FROM notification_subscriptions');
+
+        res.json({ 
+            total: totalUsers.count,
+            subscribed: subscribedUsers.count,
+            success: true 
+        });
+    } catch (error) {
+        console.error('Get user count error:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
