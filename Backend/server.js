@@ -548,131 +548,131 @@ app.post("/users/:userId/logout-all-except-current", authenticateToken, async (r
 
 // --- EMAIL NOTIFICATION ENDPOINTS ---
 
-// 📧 Send session expiry notification
-app.post('/send-session-expiry', async (req, res) => {
-    const { email } = req.body;
+// 📧 Send session expiry notification (DISABLED - No emails on login/session changes)
+// app.post('/send-session-expiry', async (req, res) => {
+//     const { email } = req.body;
 
-    if (!email) {
-        return res.status(400).json({ message: 'Email address is required' });
-    }
+//     if (!email) {
+//         return res.status(400).json({ message: 'Email address is required' });
+//     }
 
-    const loginLink = `https://todoist777.netlify.app`;
+//     const loginLink = `https://todoist777.netlify.app`;
 
-    const htmlContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <div style="background: white; padding: 30px; border-radius: 10px;">
-                <h2 style="text-align: center; color: #333; margin-bottom: 20px;">📋 Todo List App - Session Expired</h2>
-                
-                <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello there!</p>
-                
-                <p style="font-size: 16px; color: #555; line-height: 1.6;">
-                    We noticed that you haven't opened your Todo List app for more than 3 days. 
-                    For security reasons, your session has automatically expired.
-                </p>
-                
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6a5af9;">
-                    <h3 style="color: #6a5af9; margin-top: 0;">🔐 Security Notice</h3>
-                    <p style="margin: 0; color: #666;">Your account and todos are safe! This is just an automatic security measure to keep your data protected.</p>
-                </div>
-                
-                <p style="font-size: 16px; color: #555; line-height: 1.6;">
-                    To continue using your Todo List app, please log in again by clicking the button below:
-                </p>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="${loginLink}" style="background-color: #6a5af9; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(106, 90, 249, 0.3);">
-                        🔑 Login Again
-                    </a>
-                </div>
-                
-                <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                    <p style="margin: 0; color: #28a745; font-weight: 500;">✅ Your todos are still saved and waiting for you!</p>
-                </div>
-                
-                <p style="font-size: 14px; color: #888; line-height: 1.6;">
-                    If you didn't expect this email or have any concerns, please contact our support team.
-                </p>
-                
-                <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
-                
-                <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
-                    Thanks for using Todo List App!<br>
-                    <strong>The Todo App Team</strong>
-                </p>
-            </div>
-        </div>
-    `;
+//     const htmlContent = `
+//         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+//             <div style="background: white; padding: 30px; border-radius: 10px;">
+//                 <h2 style="text-align: center; color: #333; margin-bottom: 20px;">📋 Todo List App - Session Expired</h2>
+//                 
+//                 <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello there!</p>
+//                 
+//                 <p style="font-size: 16px; color: #555; line-height: 1.6;">
+//                     We noticed that you haven't opened your Todo List app for more than 3 days. 
+//                     For security reasons, your session has automatically expired.
+//                 </p>
+//                 
+//                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6a5af9;">
+//                     <h3 style="color: #6a5af9; margin-top: 0;">🔐 Security Notice</h3>
+//                     <p style="margin: 0; color: #666;">Your account and todos are safe! This is just an automatic security measure to keep your data protected.</p>
+//                 </div>
+//                 
+//                 <p style="font-size: 16px; color: #555; line-height: 1.6;">
+//                     To continue using your Todo List app, please log in again by clicking the button below:
+//                 </p>
+//                 
+//                 <div style="text-align: center; margin: 30px 0;">
+//                     <a href="${loginLink}" style="background-color: #6a5af9; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(106, 90, 249, 0.3);">
+//                         🔑 Login Again
+//                     </a>
+//                 </div>
+//                 
+//                 <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+//                     <p style="margin: 0; color: #28a745; font-weight: 500;">✅ Your todos are still saved and waiting for you!</p>
+//                 </div>
+//                 
+//                 <p style="font-size: 14px; color: #888; line-height: 1.6;">
+//                     If you didn't expect this email or have any concerns, please contact our support team.
+//                 </p>
+//                 
+//                 <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
+//                 
+//                 <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
+//                     Thanks for using Todo List App!<br>
+//                     <strong>The Todo App Team</strong>
+//                 </p>
+//             </div>
+//         </div>
+//     `;
 
-    const success = await sendEmail(email, '🔔 Your Todo List Session Has Expired - Please Login Again', htmlContent);
-    
-    if (success) {
-        res.status(200).json({ message: 'Session expiry notification sent successfully!' });
-    } else {
-        res.status(500).json({ message: 'Failed to send session expiry email. Please try again later.' });
-    }
-});
+//     const success = await sendEmail(email, '🔔 Your Todo List Session Has Expired - Please Login Again', htmlContent);
+//     
+//     if (success) {
+//         res.status(200).json({ message: 'Session expiry notification sent successfully!' });
+//     } else {
+//         res.status(500).json({ message: 'Failed to send session expiry email. Please try again later.' });
+//     }
+// });
 
-// --- Endpoint to send reminder email for inactive users ---
-app.post('/send-reminder-email', async (req, res) => {
-    const { email, daysSinceLastActive } = req.body;
+// --- Endpoint to send reminder email for inactive users (DISABLED) ---
+// app.post('/send-reminder-email', async (req, res) => {
+//     const { email, daysSinceLastActive } = req.body;
 
-    if (!email) {
-        return res.status(400).json({ message: 'Email address is required' });
-    }
+//     if (!email) {
+//         return res.status(400).json({ message: 'Email address is required' });
+//     }
 
-    const loginLink = `https://dm25m3rt-${port}.inc1.devtunnels.ms/`;
+//     const loginLink = `https://dm25m3rt-${port}.inc1.devtunnels.ms/`;
 
-    const mailOptions = {
-        from: '"Todo List App"',
-        to: email,
-        subject: '📝 We Miss You! Your Todos Are Waiting',
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 15px; background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);">
-                <div style="background: white; padding: 30px; border-radius: 10px;">
-                    <h2 style="text-align: center; color: #333; margin-bottom: 20px;">📝 We Miss You!</h2>
-                    
-                    <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello!</p>
-                    
-                    <p style="font-size: 16px; color: #555; line-height: 1.6;">
-                        It's been ${daysSinceLastActive || 'a few'} days since you last visited your Todo List app. 
-                        Your tasks are patiently waiting for you!
-                    </p>
-                    
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #e17055;">
-                        <h3 style="color: #e17055; margin-top: 0;">🎯 Stay On Track</h3>
-                        <p style="margin: 0; color: #666;">Don't let your goals slip away. A few minutes today can make a big difference!</p>
-                    </div>
-                    
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="${loginLink}" style="background-color: #e17055; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(225, 112, 85, 0.3);">
-                            📋 Check My Todos
-                        </a>
-                    </div>
-                    
-                    <p style="font-size: 14px; color: #888; line-height: 1.6; text-align: center;">
-                        Remember: Your session will expire in ${3 - (daysSinceLastActive || 0)} days if you don't log in.
-                    </p>
-                    
-                    <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
-                    
-                    <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
-                        Keep crushing your goals!<br>
-                        <strong>The Todo App Team</strong>
-                    </p>
-                </div>
-            </div>
-        `
-    };
+//     const mailOptions = {
+//         from: '"Todo List App"',
+//         to: email,
+//         subject: '📝 We Miss You! Your Todos Are Waiting',
+//         html: `
+//             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 15px; background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);">
+//                 <div style="background: white; padding: 30px; border-radius: 10px;">
+//                     <h2 style="text-align: center; color: #333; margin-bottom: 20px;">📝 We Miss You!</h2>
+//                     
+//                     <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello!</p>
+//                     
+//                     <p style="font-size: 16px; color: #555; line-height: 1.6;">
+//                         It's been ${daysSinceLastActive || 'a few'} days since you last visited your Todo List app. 
+//                         Your tasks are patiently waiting for you!
+//                     </p>
+//                     
+//                     <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #e17055;">
+//                         <h3 style="color: #e17055; margin-top: 0;">🎯 Stay On Track</h3>
+//                         <p style="margin: 0; color: #666;">Don't let your goals slip away. A few minutes today can make a big difference!</p>
+//                     </div>
+//                     
+//                     <div style="text-align: center; margin: 30px 0;">
+//                         <a href="${loginLink}" style="background-color: #e17055; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(225, 112, 85, 0.3);">
+//                             📋 Check My Todos
+//                         </a>
+//                     </div>
+//                     
+//                     <p style="font-size: 14px; color: #888; line-height: 1.6; text-align: center;">
+//                         Remember: Your session will expire in ${3 - (daysSinceLastActive || 0)} days if you don't log in.
+//                     </p>
+//                     
+//                     <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
+//                     
+//                     <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
+//                         Keep crushing your goals!<br>
+//                         <strong>The Todo App Team</strong>
+//                     </p>
+//                 </div>
+//             </div>
+//         `
+//     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log(`✅ Reminder email sent successfully to: ${email}`);
-        res.status(200).json({ message: 'Reminder email sent successfully!' });
-    } catch (error) {
-        console.error('❌ Error sending reminder email:', error);
-        res.status(500).json({ message: 'Failed to send reminder email. Please try again later.' });
-    }
-});
+//     try {
+//         await transporter.sendMail(mailOptions);
+//         console.log(`✅ Reminder email sent successfully to: ${email}`);
+//         res.status(200).json({ message: 'Reminder email sent successfully!' });
+//     } catch (error) {
+//         console.error('❌ Error sending reminder email:', error);
+//         res.status(500).json({ message: 'Failed to send reminder email. Please try again later.' });
+//     }
+// });
 
 // 📧 Send task deadline reminder
 app.post('/send-task-reminder', authenticateToken, async (req, res) => {
