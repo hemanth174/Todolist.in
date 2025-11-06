@@ -69,8 +69,13 @@
             try {
                 const userData = JSON.parse(user);
                 const header = document.querySelector('.header h1');
-                if (header && userData.name) {
-                    header.textContent = `Welcome back, ${userData.name}!`;
+                if (header && userData) {
+                    // Use email if name is "buddy" or empty
+                    let displayName = userData.name || '';
+                    if (displayName.toLowerCase() === 'buddy' || displayName.trim() === '') {
+                        displayName = userData.email ? userData.email.split('@')[0] : 'User';
+                    }
+                    header.textContent = `Welcome back, ${displayName}!`;
                 }
             } catch (e) {
                 console.error('Error parsing user data:', e);

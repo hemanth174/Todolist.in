@@ -36,13 +36,13 @@
                         </div>
                         <div class="profile-details">
                             <label>Name</label>
-                            <input type="text" value="Hemanth" />
+                            <input type="text" id="userName" placeholder="Loading..." />
                             
                             <label>Email</label>
-                            <input type="email" value="ramasaiahemanth@gmail.com" />
+                            <input type="email" id="userEmail" placeholder="Loading..." readonly />
                             
                             <label>Phone</label>
-                            <input type="tel" placeholder="Enter phone number" />
+                            <input type="tel" id="userPhone" placeholder="Enter phone number" />
                         </div>
                     </div>
                 </div>
@@ -199,29 +199,113 @@
             window.location.href = page;
         }
 
+        // ==================== USER PROFILE MANAGEMENT ====================
+        
+        // Load user profile data
+        function loadUserProfile() {
+            const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+            
+            if (user && user.email) {
+                // Set email
+                document.getElementById('userEmail').value = user.email;
+                
+                // Set name - use email if name is "buddy" or empty
+                let displayName = user.name || '';
+                if (displayName.toLowerCase() === 'buddy' || displayName.trim() === '') {
+                    displayName = user.email.split('@')[0]; // Use email username part
+                }
+                document.getElementById('userName').value = displayName;
+                
+                // Load phone if saved
+                const savedPhone = localStorage.getItem('userPhone');
+                if (savedPhone) {
+                    document.getElementById('userPhone').value = savedPhone;
+                }
+            } else {
+                // No user logged in
+                document.getElementById('userName').placeholder = 'Not logged in';
+                document.getElementById('userEmail').placeholder = 'Not logged in';
+            }
+        }
+
+        // Save profile changes
+        function saveProfile() {
+            const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+            const newName = document.getElementById('userName').value.trim();
+            const phone = document.getElementById('userPhone').value.trim();
+            
+            // Save phone to localStorage
+            if (phone) {
+                localStorage.setItem('userPhone', phone);
+            }
+            
+            // Update user name in localStorage
+            if (newName && user.email) {
+                user.name = newName;
+                localStorage.setItem('loggedInUser', JSON.stringify(user));
+            }
+            
+            showToast('✅ Profile updated successfully!', 'success');
+        }
+
+        // Add event listeners for profile inputs
+        document.getElementById('userName').addEventListener('blur', saveProfile);
+        document.getElementById('userPhone').addEventListener('blur', saveProfile);
+
+        // ==================== SETTINGS MANAGEMENT ====================
+
         // Settings functionality
         function saveSettings() {
-            // Get all form values
-            const settings = {
-                theme: document.getElementById('themeSelect').value,
-                notifications: {
-                    email: document.querySelector('input[type="checkbox"]:nth-child(1)').checked,
-                    reminders: document.querySelector('input[type="checkbox"]:nth-child(2)').checked,
-                    reports: document.querySelector('input[type="checkbox"]:nth-child(3)').checked
-                }
-            };
+            try {
+                // Save profile first
+                saveProfile();
+                
+                // Get all form values
+                const settings = {
+                    theme: document.getElementById('themeSelect').value,
+                    notifications: {
+                        email: document.querySelectorAll('.toggle')[0]?.checked || false,
+                        reminders: document.querySelectorAll('.toggle')[1]?.checked || false,
+                        reports: document.querySelectorAll('.toggle')[2]?.checked || false
+                    }
+                };
 
-            // Save to localStorage (in a real app, this would be sent to server)
-            localStorage.setItem('todoSettings', JSON.stringify(settings));
-            
-            // Show success message
-            alert('Settings saved successfully!');
+                // Save to localStorage
+                localStorage.setItem('todoSettings', JSON.stringify(settings));
+                
+                // Apply theme immediately
+                applyTheme(settings.theme);
+                
+                // Show success toast
+                showToast('✅ Settings saved successfully!', 'success');
+            } catch (error) {
+                showToast('❌ Failed to save settings', 'error');
+                console.error('Save settings error:', error);
+            }
         }
 
         function resetSettings() {
-            if (confirm('Are you sure you want to reset all settings to default?')) {
+            if (confirm('Are you sure you want to reset all settings to default? This will refresh the page.')) {
+                // Remove saved settings
                 localStorage.removeItem('todoSettings');
-                location.reload();
+                localStorage.removeItem('userPhone');
+                
+                // Show success and reload
+                showToast('✅ Settings reset to default', 'success');
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+
+        // Apply theme
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+            } else if (theme === 'light') {
+                document.body.classList.remove('dark-theme');
+            } else if (theme === 'auto') {
+                // System preference
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.body.classList.toggle('dark-theme', prefersDark);
             }
         }
 
@@ -229,26 +313,55 @@
         function loadSettings() {
             const saved = localStorage.getItem('todoSettings');
             if (saved) {
-                const settings = JSON.parse(saved);
-                document.getElementById('themeSelect').value = settings.theme || 'light';
-                // Apply other saved settings...
+                try {
+                    const settings = JSON.parse(saved);
+                    
+                    // Apply theme
+                    if (settings.theme) {
+                        document.getElementById('themeSelect').value = settings.theme;
+                        applyTheme(settings.theme);
+                    }
+                    
+                    // Apply notification settings
+                    if (settings.notifications) {
+                        const toggles = document.querySelectorAll('.toggle');
+                        if (toggles[0]) toggles[0].checked = settings.notifications.email;
+                        if (toggles[1]) toggles[1].checked = settings.notifications.reminders;
+                        if (toggles[2]) toggles[2].checked = settings.notifications.reports;
+                    }
+                } catch (error) {
+                    console.error('Error loading settings:', error);
+                }
             }
         }
 
         // Theme switching
         document.getElementById('themeSelect').addEventListener('change', (e) => {
             const theme = e.target.value;
-            document.body.className = theme === 'dark' ? 'dark-theme' : '';
+            applyTheme(theme);
+            
+            // Auto-save theme preference
+            const settings = JSON.parse(localStorage.getItem('todoSettings') || '{}');
+            settings.theme = theme;
+            localStorage.setItem('todoSettings', JSON.stringify(settings));
         });
-
-        // Initialize settings on page load
-        loadSettings();
 
         // Toggle switches functionality
         document.querySelectorAll('.toggle').forEach(toggle => {
             toggle.addEventListener('change', () => {
                 // Add visual feedback
                 toggle.parentElement.classList.toggle('enabled', toggle.checked);
+                
+                // Auto-save on change
+                const settings = JSON.parse(localStorage.getItem('todoSettings') || '{}');
+                if (!settings.notifications) settings.notifications = {};
+                
+                const toggles = document.querySelectorAll('.toggle');
+                settings.notifications.email = toggles[0]?.checked || false;
+                settings.notifications.reminders = toggles[1]?.checked || false;
+                settings.notifications.reports = toggles[2]?.checked || false;
+                
+                localStorage.setItem('todoSettings', JSON.stringify(settings));
             });
         });
 
@@ -260,6 +373,16 @@
 
         // Load active devices on page load
         async function loadActiveDevices() {
+            const devicesList = document.getElementById('activeDevicesList');
+            
+            // Show loading state
+            devicesList.innerHTML = `
+                <div class="loading-devices">
+                    <div class="spinner"></div>
+                    <p>Loading active sessions...</p>
+                </div>
+            `;
+            
             try {
                 const token = localStorage.getItem('token');
                 const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
@@ -268,7 +391,7 @@
                 console.log('API URL:', API_URL);
 
                 if (!token || !user.id) {
-                    document.getElementById('activeDevicesList').innerHTML = `
+                    devicesList.innerHTML = `
                         <div class="no-devices">
                             <p>⚠️ Please log in to view active sessions</p>
                         </div>
@@ -299,7 +422,7 @@
                 
                 // Check if table doesn't exist yet
                 if (data.message && data.message.includes('not yet initialized')) {
-                    document.getElementById('activeDevicesList').innerHTML = `
+                    devicesList.innerHTML = `
                         <div class="no-devices">
                             <p>⚠️ Session tracking not yet initialized</p>
                             <p style="font-size: 0.9rem; margin-top: 10px;">Please log out and log back in to enable device tracking.</p>
@@ -317,7 +440,7 @@
 
             } catch (error) {
                 console.error('Error loading active devices:', error);
-                document.getElementById('activeDevicesList').innerHTML = `
+                devicesList.innerHTML = `
                     <div class="error-message">
                         <p>❌ Failed to load active sessions</p>
                         <p style="font-size: 0.85rem; margin-top: 10px;">Error: ${error.message}</p>
@@ -449,9 +572,73 @@
         // Auto-refresh every 30 seconds
         setInterval(loadActiveDevices, 30000);
 
-        // Load devices on page load
-        document.addEventListener('DOMContentLoaded', loadActiveDevices);
+        // ==================== TOAST NOTIFICATIONS ====================
+        
+        function showToast(message, type = 'info') {
+            // Remove existing toast if any
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) existingToast.remove();
+            
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196F3'};
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                font-weight: 500;
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ==================== PAGE INITIALIZATION ====================
+        
+        // Load everything on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserProfile();
+            loadSettings();
+            loadActiveDevices();
+        });
     </script>
+    
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    </style>
 </body>
 
 </html>

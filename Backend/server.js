@@ -243,16 +243,17 @@ app.post("/login", async (req, res) => {
     
     deviceName = `${os} - ${browser}`;
 
-    // Create session record
-    await db.run(
+    // Create session record asynchronously (don't block login response)
+    db.run(
       `INSERT INTO sessions (user_id, token, device_name, browser, os, ip_address, last_active) 
        VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`,
       [user.id, token, deviceName, browser, os, ipAddress]
-    );
+    ).catch(err => console.error('Session creation failed:', err));
 
     // Send welcome back email asynchronously (don't block response)
     sendWelcomeEmail(email).catch(err => console.error('Email send failed:', err));
 
+    // Return response immediately
     res.json({
       message: "✅ Login successful",
       token,
