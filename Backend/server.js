@@ -120,7 +120,23 @@ const initializeDBAndServer = async () => {
       )
     `);
 
-    console.log("Database and users table initialized successfully");
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        token TEXT NOT NULL,
+        device_name TEXT,
+        browser TEXT,
+        os TEXT,
+        ip_address TEXT,
+        last_active DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        is_active INTEGER DEFAULT 1,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    console.log("Database and tables initialized successfully");
 
     app.listen(port, () => {
       console.log(`🚀 Server Running at http://localhost:${port}/`);
@@ -204,6 +220,36 @@ app.post("/login", async (req, res) => {
 
     const token = generateToken(user);
 
+    // Extract device information from headers
+    const userAgent = req.headers['user-agent'] || 'Unknown';
+    const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'Unknown';
+    
+    // Parse user agent for device info
+    let deviceName = 'Unknown Device';
+    let browser = 'Unknown Browser';
+    let os = 'Unknown OS';
+    
+    // Simple user agent parsing
+    if (userAgent.includes('Windows')) os = 'Windows';
+    else if (userAgent.includes('Mac')) os = 'macOS';
+    else if (userAgent.includes('Linux')) os = 'Linux';
+    else if (userAgent.includes('Android')) os = 'Android';
+    else if (userAgent.includes('iOS') || userAgent.includes('iPhone')) os = 'iOS';
+    
+    if (userAgent.includes('Chrome')) browser = 'Chrome';
+    else if (userAgent.includes('Firefox')) browser = 'Firefox';
+    else if (userAgent.includes('Safari')) browser = 'Safari';
+    else if (userAgent.includes('Edge')) browser = 'Edge';
+    
+    deviceName = `${os} - ${browser}`;
+
+    // Create session record
+    await db.run(
+      `INSERT INTO sessions (user_id, token, device_name, browser, os, ip_address, last_active) 
+       VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`,
+      [user.id, token, deviceName, browser, os, ipAddress]
+    );
+
     // Send welcome back email asynchronously (don't block response)
     sendWelcomeEmail(email).catch(err => console.error('Email send failed:', err));
 
@@ -281,6 +327,120 @@ app.delete("/users/:id", async (req, res) => {
     await db.run("DELETE FROM users WHERE id = ?", [id]);
     res.json({ message: "🗑️ User deleted successfully" });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// --- SESSION MANAGEMENT ENDPOINTS ---
+
+// 📱 Get active sessions for a user
+app.get("/users/:userId/sessions", authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Verify user can only see their own sessions
+    if (req.user.id !== parseInt(userId)) {
+      return res.status(403).json({ error: "Unauthorized to view these sessions" });
+    }
+
+    const sessions = await db.all(
+      `SELECT id, device_name, browser, os, ip_address, last_active, created_at, is_active 
+       FROM sessions 
+       WHERE user_id = ? AND is_active = 1 
+       ORDER BY last_active DESC`,
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      count: sessions.length,
+      sessions: sessions
+    });
+  } catch (error) {
+    console.error('Error fetching sessions:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 🔄 Update session last active time
+app.put("/sessions/heartbeat", authenticateToken, async (req, res) => {
+  try {
+    const token = req.headers['authorization'].split(' ')[1];
+    
+    await db.run(
+      `UPDATE sessions 
+       SET last_active = datetime('now') 
+       WHERE token = ? AND is_active = 1`,
+      [token]
+    );
+
+    res.json({ success: true, message: "Session updated" });
+  } catch (error) {
+    console.error('Error updating session:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 🚪 Logout from specific device/session
+app.delete("/sessions/:sessionId", authenticateToken, async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    // Verify session belongs to the user
+    const session = await db.get(
+      "SELECT user_id FROM sessions WHERE id = ?",
+      [sessionId]
+    );
+
+    if (!session) {
+      return res.status(404).json({ error: "Session not found" });
+    }
+
+    if (session.user_id !== req.user.id) {
+      return res.status(403).json({ error: "Unauthorized to delete this session" });
+    }
+
+    // Mark session as inactive instead of deleting
+    await db.run(
+      "UPDATE sessions SET is_active = 0 WHERE id = ?",
+      [sessionId]
+    );
+
+    res.json({ 
+      success: true,
+      message: "🚪 Logged out from device successfully" 
+    });
+  } catch (error) {
+    console.error('Error deleting session:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 🚪 Logout from all devices except current
+app.post("/users/:userId/logout-all-except-current", authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const currentToken = req.headers['authorization'].split(' ')[1];
+    
+    // Verify user can only logout their own sessions
+    if (req.user.id !== parseInt(userId)) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    const result = await db.run(
+      `UPDATE sessions 
+       SET is_active = 0 
+       WHERE user_id = ? AND token != ? AND is_active = 1`,
+      [userId, currentToken]
+    );
+
+    res.json({ 
+      success: true,
+      message: `🚪 Logged out from ${result.changes} other device(s)`,
+      count: result.changes
+    });
+  } catch (error) {
+    console.error('Error logging out from all devices:', error);
     res.status(500).json({ error: error.message });
   }
 });

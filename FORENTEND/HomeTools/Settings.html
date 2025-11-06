@@ -139,7 +139,30 @@
             </div>
 
             <div class="settings-section">
-                <h2>💾 Data Management</h2>
+                <h2>� Active Devices</h2>
+                <p class="section-description">Manage devices where you're logged in. You can logout from any device remotely.</p>
+                <div class="settings-group">
+                    <div class="devices-header">
+                        <div class="device-count">
+                            <span id="deviceCount">Loading...</span>
+                        </div>
+                        <button class="btn-warning" id="logoutAllBtn" onclick="logoutAllOtherDevices()">
+                            Logout All Other Devices
+                        </button>
+                    </div>
+                    
+                    <div id="activeDevicesList" class="active-devices-list">
+                        <!-- Devices will be loaded here dynamically -->
+                        <div class="loading-devices">
+                            <div class="spinner"></div>
+                            <p>Loading active sessions...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>�💾 Data Management</h2>
                 <div class="settings-group">
                     <div class="data-actions">
                         <button class="btn-primary">Export Data</button>
@@ -228,6 +251,180 @@
                 toggle.parentElement.classList.toggle('enabled', toggle.checked);
             });
         });
+
+        // ==================== ACTIVE DEVICES MANAGEMENT ====================
+
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://todolist-auth-server.onrender.com';
+
+        // Load active devices on page load
+        async function loadActiveDevices() {
+            try {
+                const token = localStorage.getItem('token');
+                const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+
+                if (!token || !user.id) {
+                    document.getElementById('activeDevicesList').innerHTML = `
+                        <div class="no-devices">
+                            <p>⚠️ Please log in to view active sessions</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const response = await fetch(`${API_URL}/users/${user.id}/sessions`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch sessions');
+                }
+
+                const data = await response.json();
+                displayDevices(data.sessions);
+                
+                // Update device count
+                document.getElementById('deviceCount').textContent = 
+                    `${data.count} Active ${data.count === 1 ? 'Device' : 'Devices'}`;
+
+            } catch (error) {
+                console.error('Error loading active devices:', error);
+                document.getElementById('activeDevicesList').innerHTML = `
+                    <div class="error-message">
+                        <p>❌ Failed to load active sessions</p>
+                    </div>
+                `;
+                document.getElementById('deviceCount').textContent = 'Error';
+            }
+        }
+
+        // Display devices in the UI
+        function displayDevices(sessions) {
+            const devicesList = document.getElementById('activeDevicesList');
+
+            if (!sessions || sessions.length === 0) {
+                devicesList.innerHTML = `
+                    <div class="no-devices">
+                        <p>📱 No active sessions found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            devicesList.innerHTML = sessions.map((session, index) => {
+                const lastActive = new Date(session.last_active);
+                const createdAt = new Date(session.created_at);
+                const isCurrentDevice = index === 0; // First one is usually current
+
+                return `
+                    <div class="device-card ${isCurrentDevice ? 'current-device' : ''}">
+                        <div class="device-icon">
+                            ${getDeviceIcon(session.os)}
+                        </div>
+                        <div class="device-info">
+                            <div class="device-name">
+                                ${session.device_name}
+                                ${isCurrentDevice ? '<span class="current-badge">Current</span>' : ''}
+                            </div>
+                            <div class="device-details">
+                                <span>🌐 ${session.ip_address || 'Unknown'}</span>
+                                <span>⏰ ${formatTimeAgo(lastActive)}</span>
+                            </div>
+                        </div>
+                        <div class="device-actions">
+                            ${!isCurrentDevice ? `
+                                <button class="btn-logout-device" onclick="logoutDevice(${session.id}, '${session.device_name}')">
+                                    🚪 Logout
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Get device icon based on OS
+        function getDeviceIcon(os) {
+            const icons = {
+                'Windows': '💻',
+                'macOS': '🖥️',
+                'Linux': '🐧',
+                'Android': '📱',
+                'iOS': '📱'
+            };
+            return icons[os] || '🌐';
+        }
+
+        // Format time ago
+        function formatTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+            return `${Math.floor(seconds / 86400)} days ago`;
+        }
+
+        // Logout from specific device
+        async function logoutDevice(sessionId, deviceName) {
+            if (!confirm(`Logout from "${deviceName}"?`)) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/sessions/${sessionId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed');
+
+                alert(`✅ Logged out from "${deviceName}"`);
+                loadActiveDevices();
+
+            } catch (error) {
+                alert('❌ Failed to logout device');
+            }
+        }
+
+        // Logout from all other devices
+        async function logoutAllOtherDevices() {
+            if (!confirm('Logout from all other devices?')) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+
+                const response = await fetch(`${API_URL}/users/${user.id}/logout-all-except-current`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed');
+
+                const data = await response.json();
+                alert(data.message);
+                loadActiveDevices();
+
+            } catch (error) {
+                alert('❌ Failed to logout from all devices');
+            }
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadActiveDevices, 30000);
+
+        // Load devices on page load
+        document.addEventListener('DOMContentLoaded', loadActiveDevices);
     </script>
 </body>
 
