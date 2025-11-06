@@ -414,6 +414,22 @@
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
                     console.error('Error response:', errorData);
+                    
+                    // Check if token expired
+                    if (response.status === 403 || response.status === 401) {
+                        devicesList.innerHTML = `
+                            <div class="error-message">
+                                <p>⚠️ Your session has expired</p>
+                                <p style="font-size: 0.9rem; margin-top: 10px;">Please log out and log back in to continue.</p>
+                                <button class="btn-primary" onclick="handleLogout()" style="margin-top: 15px;">
+                                    🚪 Logout
+                                </button>
+                            </div>
+                        `;
+                        document.getElementById('deviceCount').textContent = 'Session Expired';
+                        return;
+                    }
+                    
                     throw new Error(errorData.error || 'Failed to fetch sessions');
                 }
 
@@ -445,9 +461,18 @@
                         <p>❌ Failed to load active sessions</p>
                         <p style="font-size: 0.85rem; margin-top: 10px;">Error: ${error.message}</p>
                         <p style="font-size: 0.85rem;">Please refresh the page or try logging out and back in.</p>
+                        <button class="btn-primary" onclick="location.reload()" style="margin-top: 15px;">
+                            🔄 Refresh Page
+                        </button>
+                        <button class="btn-secondary" onclick="handleLogout()" style="margin-top: 15px; margin-left: 10px;">
+                            🚪 Logout
+                        </button>
                     </div>
                 `;
                 document.getElementById('deviceCount').textContent = 'Error';
+                
+                // Stop auto-refresh on error
+                clearInterval(refreshInterval);
             }
         }
 
@@ -570,7 +595,21 @@
         }
 
         // Auto-refresh every 30 seconds
-        setInterval(loadActiveDevices, 30000);
+        let refreshInterval = setInterval(loadActiveDevices, 30000);
+
+        // ==================== LOGOUT FUNCTIONALITY ====================
+        
+        function handleLogout() {
+            // Clear interval
+            clearInterval(refreshInterval);
+            
+            // Clear storage
+            localStorage.removeItem('token');
+            localStorage.removeItem('loggedInUser');
+            
+            // Redirect to landing page
+            window.location.href = '../../LandingPage.html';
+        }
 
         // ==================== TOAST NOTIFICATIONS ====================
         
@@ -608,8 +647,23 @@
 
         // ==================== PAGE INITIALIZATION ====================
         
+        // Check if user is logged in
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('loggedInUser');
+            
+            if (!token || !user) {
+                window.location.href = '../../LandingPage.html';
+                return false;
+            }
+            return true;
+        }
+        
         // Load everything on page load
         document.addEventListener('DOMContentLoaded', () => {
+            // Check authentication first
+            if (!checkAuth()) return;
+            
             loadUserProfile();
             loadSettings();
             loadActiveDevices();

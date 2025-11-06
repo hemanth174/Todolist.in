@@ -579,6 +579,25 @@ body {
     opacity: 0.5;
 }
 
+.error-message {
+    background: linear-gradient(135deg, #ffe5e5 0%, #ffcccc 100%);
+    border-radius: 15px;
+    padding: 40px 20px;
+    text-align: center;
+    color: #d32f2f;
+}
+
+.error-message p:first-child {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.error-message button {
+    display: inline-block;
+    margin: 5px;
+}
+
 /* Dark theme support */
 .dark-theme {
     background-color: #1a1a1a;
@@ -624,6 +643,11 @@ body {
 .dark-theme .spinner {
     border-color: rgba(74, 85, 104, 0.3);
     border-top-color: #667eea;
+}
+
+.dark-theme .error-message {
+    background: linear-gradient(135deg, #4a2424 0%, #3d1f1f 100%);
+    color: #ff8a80;
 }
 
 /* Success message styles */
