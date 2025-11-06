@@ -61,7 +61,12 @@ class TaskAPI {
 
     // Get single task by ID
     async getTask(id) {
-        return this.request(`/tasks/${id}`);
+        // Get logged in user ID for security check
+        const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+        const userId = user.id;
+        
+        const queryParams = userId ? `?userId=${userId}` : '';
+        return this.request(`/tasks/${id}${queryParams}`);
     }
 
     // Create new task
@@ -74,15 +79,27 @@ class TaskAPI {
 
     // Update existing task
     async updateTask(id, taskData) {
+        // Get logged in user ID for security check
+        const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+        const userId = user.id;
+        
         return this.request(`/tasks/${id}`, {
             method: 'PUT',
-            body: JSON.stringify(taskData),
+            body: JSON.stringify({
+                ...taskData,
+                userId: userId ? userId.toString() : undefined
+            }),
         });
     }
 
     // Delete task
     async deleteTask(id) {
-        return this.request(`/tasks/${id}`, {
+        // Get logged in user ID for security check
+        const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+        const userId = user.id;
+        
+        const queryParams = userId ? `?userId=${userId}` : '';
+        return this.request(`/tasks/${id}${queryParams}`, {
             method: 'DELETE',
         });
     }
@@ -120,7 +137,12 @@ class TaskAPI {
 
     // Get dashboard statistics
     async getDashboardStats() {
-        return this.request('/stats/dashboard');
+        // Get logged in user ID for filtering stats
+        const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+        const userId = user.id;
+        
+        const queryParams = userId ? `?userId=${userId}` : '';
+        return this.request(`/stats/dashboard${queryParams}`);
     }
 
     // ===================== UTILITY METHODS =====================

@@ -40,12 +40,27 @@ function generateId(items) {
 
 // ===================== TASKS ENDPOINTS =====================
 
-// GET all tasks
+// GET all tasks (FILTERED BY USER)
 app.get('/api/tasks', (req, res) => {
     const db = readDB();
-    const { status, priority, assignee, search } = req.query;
+    const { status, priority, assignee, search, userId } = req.query;
     
     let tasks = db.tasks;
+    
+    // ⚠️ CRITICAL SECURITY FIX: Filter by userId if provided
+    // Each user should ONLY see their own tasks
+    if (userId) {
+        tasks = tasks.filter(task => task.userId === userId || task.userId === userId.toString());
+    } else {
+        // If no userId provided, return empty array for security
+        console.warn('⚠️ Security Warning: Tasks requested without userId filter');
+        return res.json({
+            success: true,
+            data: [],
+            total: 0,
+            message: 'userId parameter is required'
+        });
+    }
     
     // Filter by status
     if (status) {
@@ -82,12 +97,21 @@ app.get('/api/tasks', (req, res) => {
 // GET single task
 app.get('/api/tasks/:id', (req, res) => {
     const db = readDB();
+    const { userId } = req.query;
     const task = db.tasks.find(t => t.id === parseInt(req.params.id));
     
     if (!task) {
         return res.status(404).json({
             success: false,
             message: 'Task not found'
+        });
+    }
+    
+    // ⚠️ SECURITY CHECK: Verify user owns this task
+    if (userId && task.userId && task.userId !== userId && task.userId !== userId.toString()) {
+        return res.status(403).json({
+            success: false,
+            message: 'Unauthorized: You do not have permission to view this task'
         });
     }
     
@@ -100,13 +124,21 @@ app.get('/api/tasks/:id', (req, res) => {
 // POST new task
 app.post('/api/tasks', (req, res) => {
     const db = readDB();
-    const { title, description, priority, dueDate, tags, assignee, status, projectId } = req.body;
+    const { title, description, priority, dueDate, tags, assignee, status, projectId, userId } = req.body;
     
     // Validation
     if (!title || !description) {
         return res.status(400).json({
             success: false,
             message: 'Title and description are required'
+        });
+    }
+    
+    // ⚠️ SECURITY CHECK: userId is required for task creation
+    if (!userId) {
+        return res.status(400).json({
+            success: false,
+            message: 'userId is required to create a task'
         });
     }
     
@@ -120,6 +152,7 @@ app.post('/api/tasks', (req, res) => {
         tags: tags || [],
         assignee: assignee || 'John Doe',
         projectId: projectId || null,
+        userId: userId.toString(), // ⚠️ Store userId with task
         progress: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -145,6 +178,7 @@ app.post('/api/tasks', (req, res) => {
 // PUT update task
 app.put('/api/tasks/:id', (req, res) => {
     const db = readDB();
+    const { userId } = req.body;
     const taskIndex = db.tasks.findIndex(t => t.id === parseInt(req.params.id));
     
     if (taskIndex === -1) {
@@ -154,10 +188,19 @@ app.put('/api/tasks/:id', (req, res) => {
         });
     }
     
-    const { title, description, priority, dueDate, tags, assignee, status, progress } = req.body;
     const existingTask = db.tasks[taskIndex];
     
-    // Update task fields
+    // ⚠️ SECURITY CHECK: Verify user owns this task
+    if (userId && existingTask.userId && existingTask.userId !== userId && existingTask.userId !== userId.toString()) {
+        return res.status(403).json({
+            success: false,
+            message: 'Unauthorized: You do not have permission to update this task'
+        });
+    }
+    
+    const { title, description, priority, dueDate, tags, assignee, status, progress } = req.body;
+    
+    // Update task fields (preserve userId)
     const updatedTask = {
         ...existingTask,
         title: title || existingTask.title,
@@ -168,6 +211,7 @@ app.put('/api/tasks/:id', (req, res) => {
         tags: tags || existingTask.tags,
         assignee: assignee || existingTask.assignee,
         progress: progress !== undefined ? progress : existingTask.progress,
+        userId: existingTask.userId, // ⚠️ Preserve original userId
         updatedAt: new Date().toISOString(),
         completedAt: status === 'completed' ? new Date().toISOString() : existingTask.completedAt
     };
@@ -191,12 +235,23 @@ app.put('/api/tasks/:id', (req, res) => {
 // DELETE task
 app.delete('/api/tasks/:id', (req, res) => {
     const db = readDB();
+    const { userId } = req.query;
     const taskIndex = db.tasks.findIndex(t => t.id === parseInt(req.params.id));
     
     if (taskIndex === -1) {
         return res.status(404).json({
             success: false,
             message: 'Task not found'
+        });
+    }
+    
+    const taskToDelete = db.tasks[taskIndex];
+    
+    // ⚠️ SECURITY CHECK: Verify user owns this task
+    if (userId && taskToDelete.userId && taskToDelete.userId !== userId && taskToDelete.userId !== userId.toString()) {
+        return res.status(403).json({
+            success: false,
+            message: 'Unauthorized: You do not have permission to delete this task'
         });
     }
     
@@ -291,10 +346,30 @@ app.get('/api/categories', (req, res) => {
 
 // ===================== STATISTICS ENDPOINTS =====================
 
-// GET dashboard statistics
+// GET dashboard statistics (FILTERED BY USER)
 app.get('/api/stats/dashboard', (req, res) => {
     const db = readDB();
-    const tasks = db.tasks;
+    const { userId } = req.query;
+    
+    // ⚠️ SECURITY: Only return stats for the specific user
+    let tasks = db.tasks;
+    if (userId) {
+        tasks = tasks.filter(t => t.userId === userId || t.userId === userId.toString());
+    } else {
+        // No userId provided - return empty stats
+        return res.json({
+            success: true,
+            data: {
+                total: 0,
+                todo: 0,
+                inProgress: 0,
+                review: 0,
+                completed: 0,
+                overdue: 0,
+                completionRate: 0
+            }
+        });
+    }
     
     const stats = {
         total: tasks.length,
