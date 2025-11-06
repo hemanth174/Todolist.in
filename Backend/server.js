@@ -343,6 +343,21 @@ app.get("/users/:userId/sessions", authenticateToken, async (req, res) => {
       return res.status(403).json({ error: "Unauthorized to view these sessions" });
     }
 
+    // Check if sessions table exists
+    const tableExists = await db.get(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='sessions'"
+    );
+
+    if (!tableExists) {
+      console.log('Sessions table does not exist, returning empty sessions');
+      return res.json({
+        success: true,
+        count: 0,
+        sessions: [],
+        message: "Sessions table not yet initialized. Please log out and log back in."
+      });
+    }
+
     const sessions = await db.all(
       `SELECT id, device_name, browser, os, ip_address, last_active, created_at, is_active 
        FROM sessions 

@@ -264,6 +264,9 @@
                 const token = localStorage.getItem('token');
                 const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
 
+                console.log('Loading active devices for user:', user.id);
+                console.log('API URL:', API_URL);
+
                 if (!token || !user.id) {
                     document.getElementById('activeDevicesList').innerHTML = `
                         <div class="no-devices">
@@ -273,18 +276,39 @@
                     return;
                 }
 
-                const response = await fetch(`${API_URL}/users/${user.id}/sessions`, {
+                const url = `${API_URL}/users/${user.id}/sessions`;
+                console.log('Fetching from:', url);
+
+                const response = await fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
 
+                console.log('Response status:', response.status);
+
                 if (!response.ok) {
-                    throw new Error('Failed to fetch sessions');
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Error response:', errorData);
+                    throw new Error(errorData.error || 'Failed to fetch sessions');
                 }
 
                 const data = await response.json();
+                console.log('Sessions data:', data);
+                
+                // Check if table doesn't exist yet
+                if (data.message && data.message.includes('not yet initialized')) {
+                    document.getElementById('activeDevicesList').innerHTML = `
+                        <div class="no-devices">
+                            <p>⚠️ Session tracking not yet initialized</p>
+                            <p style="font-size: 0.9rem; margin-top: 10px;">Please log out and log back in to enable device tracking.</p>
+                        </div>
+                    `;
+                    document.getElementById('deviceCount').textContent = '0 Devices';
+                    return;
+                }
+                
                 displayDevices(data.sessions);
                 
                 // Update device count
@@ -296,6 +320,8 @@
                 document.getElementById('activeDevicesList').innerHTML = `
                     <div class="error-message">
                         <p>❌ Failed to load active sessions</p>
+                        <p style="font-size: 0.85rem; margin-top: 10px;">Error: ${error.message}</p>
+                        <p style="font-size: 0.85rem;">Please refresh the page or try logging out and back in.</p>
                     </div>
                 `;
                 document.getElementById('deviceCount').textContent = 'Error';
