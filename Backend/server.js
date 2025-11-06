@@ -261,7 +261,7 @@ function generateToken(user) {
   return jwt.sign(
     { id: user.id, name: user.name, email: user.email },
     SECRET_KEY,
-    { expiresIn: "3d" } // Token valid for 3 days
+    { expiresIn: "3d" } // Token valid for 3 DAYS (72 hours) - Sessions will remain active for 3 full days
   );
 }
 

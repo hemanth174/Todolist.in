@@ -136,12 +136,10 @@
                     
                     <div class="setting-item">
                         <label>Session Timeout</label>
-                        <select>
-                            <option value="15">15 minutes</option>
-                            <option value="30">30 minutes</option>
-                            <option value="60">1 hour</option>
-                            <option value="240">4 hours</option>
+                        <select disabled style="opacity: 0.7; cursor: not-allowed;">
+                            <option value="3d" selected>3 Days (Auto-configured)</option>
                         </select>
+                        <small style="display: block; margin-top: 5px; color: #666;">Your session remains active for 3 full days (72 hours)</small>
                     </div>
                     
                     <button class="btn-danger">Change Password</button>
