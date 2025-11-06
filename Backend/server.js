@@ -97,6 +97,88 @@ async function sendWelcomeEmail(email) {
     return await sendEmail(email, '🎉 Welcome to Your Todo List App!', html);
 }
 
+// Send session expiry notification
+async function sendSessionExpiryEmail(email, deviceName) {
+    const loginLink = `https://todoist777.netlify.app`;
+    
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 15px; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);">
+            <div style="background: white; padding: 30px; border-radius: 10px;">
+                <h2 style="text-align: center; color: #333; margin-bottom: 20px;">🔒 Session Expired</h2>
+                
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello,</p>
+                
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">
+                    Your session on <strong>${deviceName}</strong> has expired for security reasons.
+                </p>
+                
+                <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+                    <h3 style="color: #856404; margin-top: 0;">⚠️ Security Notice</h3>
+                    <p style="color: #856404; margin: 0;">
+                        If this wasn't you, please change your password immediately.
+                    </p>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${loginLink}" style="background-color: #ff6b6b; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);">
+                        🔐 Login Again
+                    </a>
+                </div>
+                
+                <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
+                
+                <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
+                    Stay secure!<br>
+                    <strong>The Todo App Team</strong>
+                </p>
+            </div>
+        </div>
+    `;
+
+    return await sendEmail(email, '🔒 Your Session Has Expired', html);
+}
+
+// Send task reminder email
+async function sendTaskReminderEmail(email, taskTitle, dueDate) {
+    const loginLink = `https://todoist777.netlify.app`;
+    
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; border-radius: 15px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div style="background: white; padding: 30px; border-radius: 10px;">
+                <h2 style="text-align: center; color: #333; margin-bottom: 20px;">⏰ Task Reminder</h2>
+                
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">Hello,</p>
+                
+                <p style="font-size: 16px; color: #555; line-height: 1.6;">
+                    Don't forget about your upcoming task!
+                </p>
+                
+                <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2196F3;">
+                    <h3 style="color: #1976d2; margin-top: 0;">📝 ${taskTitle}</h3>
+                    <p style="color: #1976d2; margin: 5px 0;">
+                        <strong>Due:</strong> ${dueDate}
+                    </p>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${loginLink}" style="background-color: #2196F3; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);">
+                        ✅ Complete Task
+                    </a>
+                </div>
+                
+                <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
+                
+                <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
+                    Stay productive!<br>
+                    <strong>The Todo App Team</strong>
+                </p>
+            </div>
+        </div>
+    `;
+
+    return await sendEmail(email, `⏰ Reminder: ${taskTitle}`, html);
+}
+
 
 
 // SQLite Database setup
@@ -250,8 +332,7 @@ app.post("/login", async (req, res) => {
       [user.id, token, deviceName, browser, os, ipAddress]
     ).catch(err => console.error('Session creation failed:', err));
 
-    // Send welcome back email asynchronously (don't block response)
-    sendWelcomeEmail(email).catch(err => console.error('Email send failed:', err));
+    // NO EMAIL ON LOGIN - Only on registration, session expiry, or reminders
 
     // Return response immediately
     res.json({
@@ -402,9 +483,9 @@ app.delete("/sessions/:sessionId", authenticateToken, async (req, res) => {
   try {
     const { sessionId } = req.params;
     
-    // Verify session belongs to the user
+    // Get session details including device name
     const session = await db.get(
-      "SELECT user_id FROM sessions WHERE id = ?",
+      "SELECT s.user_id, s.device_name, u.email FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.id = ?",
       [sessionId]
     );
 
@@ -421,6 +502,10 @@ app.delete("/sessions/:sessionId", authenticateToken, async (req, res) => {
       "UPDATE sessions SET is_active = 0 WHERE id = ?",
       [sessionId]
     );
+
+    // Send session expiry email asynchronously (optional - only if you want notifications for manual logouts)
+    // Uncomment the next line if you want email notifications when users manually logout from a device
+    // sendSessionExpiryEmail(session.email, session.device_name).catch(err => console.error('Email send failed:', err));
 
     res.json({ 
       success: true,
@@ -586,6 +671,26 @@ app.post('/send-reminder-email', async (req, res) => {
     } catch (error) {
         console.error('❌ Error sending reminder email:', error);
         res.status(500).json({ message: 'Failed to send reminder email. Please try again later.' });
+    }
+});
+
+// 📧 Send task deadline reminder
+app.post('/send-task-reminder', authenticateToken, async (req, res) => {
+    const { taskTitle, dueDate } = req.body;
+
+    if (!taskTitle || !dueDate) {
+        return res.status(400).json({ message: 'Task title and due date are required' });
+    }
+
+    const userEmail = req.user.email;
+    
+    // Send task reminder email using the new template
+    const success = await sendTaskReminderEmail(userEmail, taskTitle, dueDate);
+    
+    if (success) {
+        res.status(200).json({ message: 'Task reminder sent successfully!' });
+    } else {
+        res.status(500).json({ message: 'Failed to send task reminder. Please try again later.' });
     }
 });
 
