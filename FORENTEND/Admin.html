@@ -403,6 +403,51 @@
             margin-bottom: 20px;
         }
 
+        .info-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .info-banner.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .info-banner.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .info-banner-icon {
+            font-size: 2rem;
+        }
+
+        .info-banner-content {
+            flex: 1;
+        }
+
+        .info-banner-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .info-banner-text {
+            opacity: 0.95;
+            font-size: 0.9rem;
+        }
+
+        .info-banner a {
+            color: white;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
         /* Modal Styles */
         .modal {
             display: none;
@@ -525,6 +570,9 @@
             <h1>🎛️ Admin Dashboard</h1>
             <button class="btn-logout" onclick="logout()">🚪 Logout</button>
         </div>
+
+        <!-- Info Banner (shown when not logged in to regular account) -->
+        <div id="authBanner" style="display: none;"></div>
 
         <!-- Stats Cards -->
         <div class="stats-grid">
@@ -741,6 +789,10 @@
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('adminDashboard').style.display = 'block';
             document.body.style.background = '#f0f2f5';
+            
+            // Check if user has regular account token
+            checkUserAuthentication();
+            
             loadStats();
             loadUsers();
             loadHistory();
@@ -752,6 +804,46 @@
                 if (activeTab === 'users-tab') loadUsers();
                 if (activeTab === 'history-tab') loadHistory();
             }, 30000);
+        }
+
+        // Check if user is logged into their regular account
+        function checkUserAuthentication() {
+            const token = localStorage.getItem('token');
+            const authBanner = document.getElementById('authBanner');
+            
+            if (!token) {
+                authBanner.innerHTML = `
+                    <div class="info-banner warning">
+                        <div class="info-banner-icon">⚠️</div>
+                        <div class="info-banner-content">
+                            <div class="info-banner-title">Account Login Required</div>
+                            <div class="info-banner-text">
+                                You need to login to your regular Todo List account to access user data and send notifications.
+                                <a href="/HomeTools/Home.html">Click here to login</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                authBanner.style.display = 'block';
+            } else {
+                authBanner.innerHTML = `
+                    <div class="info-banner success">
+                        <div class="info-banner-icon">✅</div>
+                        <div class="info-banner-content">
+                            <div class="info-banner-title">Connected</div>
+                            <div class="info-banner-text">
+                                You're logged in and can access all admin features.
+                            </div>
+                        </div>
+                    </div>
+                `;
+                authBanner.style.display = 'block';
+                
+                // Hide success banner after 3 seconds
+                setTimeout(() => {
+                    authBanner.style.display = 'none';
+                }, 3000);
+            }
         }
 
         // Logout
@@ -803,10 +895,21 @@
             try {
                 const token = localStorage.getItem('token');
                 if (!token) {
-                    document.getElementById('usersListContainer').innerHTML = 
-                        '<div class="empty-state">Please login to your account first</div>';
+                    document.getElementById('usersListContainer').innerHTML = `
+                        <div class="empty-state">
+                            <p style="font-size: 1.2rem; margin-bottom: 15px;">🔑 Authentication Required</p>
+                            <p>Please login to your regular Todo List account first, then return to the admin dashboard.</p>
+                            <p style="margin-top: 15px;">
+                                <a href="/HomeTools/Home.html" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                                    → Go to Login Page
+                                </a>
+                            </p>
+                        </div>`;
                     return;
                 }
+
+                // Show loading state
+                document.getElementById('usersListContainer').innerHTML = '<div class="loading">Loading users...</div>';
 
                 const response = await fetch(`${API_URL}/users`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -816,14 +919,25 @@
                     const data = await response.json();
                     allUsers = data.users;
                     displayUsers(allUsers);
+                } else if (response.status === 403 || response.status === 401) {
+                    document.getElementById('usersListContainer').innerHTML = `
+                        <div class="empty-state">
+                            <p style="font-size: 1.2rem; margin-bottom: 15px;">🔐 Session Expired</p>
+                            <p>Your login session has expired. Please login again.</p>
+                            <p style="margin-top: 15px;">
+                                <a href="/HomeTools/Home.html" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                                    → Go to Login Page
+                                </a>
+                            </p>
+                        </div>`;
                 } else {
                     document.getElementById('usersListContainer').innerHTML = 
-                        '<div class="empty-state">Failed to load users</div>';
+                        '<div class="empty-state">Failed to load users. Please try refreshing the page.</div>';
                 }
             } catch (error) {
                 console.error('Failed to load users:', error);
                 document.getElementById('usersListContainer').innerHTML = 
-                    '<div class="empty-state">Error loading users</div>';
+                    '<div class="empty-state">Error loading users. Please check your connection and try again.</div>';
             }
         }
 
@@ -879,10 +993,21 @@
             try {
                 const token = localStorage.getItem('token');
                 if (!token) {
-                    document.getElementById('subscribedListContainer').innerHTML = 
-                        '<div class="empty-state">Please login to your account first</div>';
+                    document.getElementById('subscribedListContainer').innerHTML = `
+                        <div class="empty-state">
+                            <p style="font-size: 1.2rem; margin-bottom: 15px;">🔑 Authentication Required</p>
+                            <p>Please login to your regular Todo List account first, then return to the admin dashboard.</p>
+                            <p style="margin-top: 15px;">
+                                <a href="/HomeTools/Home.html" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                                    → Go to Login Page
+                                </a>
+                            </p>
+                        </div>`;
                     return;
                 }
+
+                // Show loading state
+                document.getElementById('subscribedListContainer').innerHTML = '<div class="loading">Loading subscribed users...</div>';
 
                 // Get all users first
                 const usersResponse = await fetch(`${API_URL}/users`, {
@@ -901,14 +1026,25 @@
                     // In production, you'd fetch actual subscription status
                     subscribedUsers = usersData.users;
                     displaySubscribedUsers(subscribedUsers);
+                } else if (usersResponse.status === 403 || usersResponse.status === 401) {
+                    document.getElementById('subscribedListContainer').innerHTML = `
+                        <div class="empty-state">
+                            <p style="font-size: 1.2rem; margin-bottom: 15px;">🔐 Session Expired</p>
+                            <p>Your login session has expired. Please login again.</p>
+                            <p style="margin-top: 15px;">
+                                <a href="/HomeTools/Home.html" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                                    → Go to Login Page
+                                </a>
+                            </p>
+                        </div>`;
                 } else {
                     document.getElementById('subscribedListContainer').innerHTML = 
-                        '<div class="empty-state">Failed to load subscribed users</div>';
+                        '<div class="empty-state">Failed to load subscribed users. Please try refreshing.</div>';
                 }
             } catch (error) {
                 console.error('Failed to load subscribed users:', error);
                 document.getElementById('subscribedListContainer').innerHTML = 
-                    '<div class="empty-state">Error loading subscribed users</div>';
+                    '<div class="empty-state">Error loading subscribed users. Please check your connection.</div>';
             }
         }
 
