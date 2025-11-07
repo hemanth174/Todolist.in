@@ -676,30 +676,32 @@
 
             const taskHTML = `
                 <div class="task-card" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.id}">
-                    <div class="task-header">
-                        <h4>${task.title}</h4>
-                        <div class="task-actions">
-                            <button class="task-action-btn" onclick="editTask(${task.id})">✏️</button>
-                            <button class="task-action-btn" onclick="deleteTask(${task.id})">🗑️</button>
-                        </div>
+                    <div class="task-delete-overlay">
+                        <span class="delete-icon">🗑️</span>
+                        <span class="delete-text">Delete</span>
                     </div>
-                    <p>${task.description}</p>
-                    ${task.tags && task.tags.length > 0 ? 
-                        `<div class="task-tags">${task.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>` : 
-                        ''
-                    }
-                    <div class="task-meta">
-                        <span class="priority ${task.priority}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
-                        <span class="due-date">Due: ${formattedDueDate}</span>
-                        <div class="task-progress">
-                            <div class="progress-circle" data-progress="${task.progress || 0}">
-                                <span class="progress-text">${task.progress || 0}%</span>
+                    <div class="task-content">
+                        <div class="task-header">
+                            <h4 class="task-title-editable" onclick="editTaskTitle(event, ${task.id})">${task.title}</h4>
+                        </div>
+                        <p class="task-description-editable" onclick="editTaskDescription(event, ${task.id})">${task.description}</p>
+                        ${task.tags && task.tags.length > 0 ? 
+                            `<div class="task-tags">${task.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>` : 
+                            ''
+                        }
+                        <div class="task-meta">
+                            <span class="priority ${task.priority}" onclick="editTaskPriority(event, ${task.id})">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
+                            <span class="due-date" onclick="editTaskDueDate(event, ${task.id})">Due: ${formattedDueDate}</span>
+                            <div class="task-progress">
+                                <div class="progress-circle" data-progress="${task.progress || 0}">
+                                    <span class="progress-text">${task.progress || 0}%</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="task-assignee">
-                        <img src="https://via.placeholder.com/30" alt="User" class="avatar">
-                        <span class="assignee-name">${task.assignee}</span>
+                        <div class="task-assignee">
+                            <img src="https://via.placeholder.com/30" alt="User" class="avatar">
+                            <span class="assignee-name">${task.assignee}</span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -708,15 +710,19 @@
             if (targetColumn) {
                 targetColumn.insertAdjacentHTML('beforeend', taskHTML);
                 
-                // Add dragend event listener to new task
+                // Add event listeners to new task
                 const newTaskElement = targetColumn.querySelector(`[data-task-id="${task.id}"]`);
                 if (newTaskElement) {
+                    // Drag end event
                     newTaskElement.addEventListener('dragend', () => {
                         newTaskElement.classList.remove('dragging');
                         document.querySelectorAll('.task-list').forEach(list => {
                             list.classList.remove('drag-over');
                         });
                     });
+                    
+                    // Initialize swipe-to-delete
+                    initializeSwipeToDelete(newTaskElement);
                 }
             }
 
@@ -757,9 +763,292 @@
             }
         }
 
-        // Task Management Functions
+        // Swipe to Delete Functionality
+        function initializeSwipeToDelete(taskElement) {
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+            let deleteThreshold = -100; // Swipe left 100px to delete
+
+            taskElement.addEventListener('touchstart', handleTouchStart, { passive: true });
+            taskElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+            taskElement.addEventListener('touchend', handleTouchEnd);
+
+            taskElement.addEventListener('mousedown', handleMouseDown);
+
+            function handleTouchStart(e) {
+                startX = e.touches[0].clientX;
+                isDragging = true;
+                taskElement.style.transition = 'none';
+            }
+
+            function handleMouseDown(e) {
+                startX = e.clientX;
+                isDragging = true;
+                taskElement.style.transition = 'none';
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+                e.preventDefault();
+            }
+
+            function handleTouchMove(e) {
+                if (!isDragging) return;
+                
+                currentX = e.touches[0].clientX - startX;
+                
+                // Only allow left swipe
+                if (currentX < 0) {
+                    taskElement.style.transform = `translateX(${currentX}px)`;
+                    
+                    // Show delete overlay
+                    const overlay = taskElement.querySelector('.task-delete-overlay');
+                    if (overlay) {
+                        const opacity = Math.min(Math.abs(currentX) / Math.abs(deleteThreshold), 1);
+                        overlay.style.opacity = opacity;
+                    }
+                    
+                    e.preventDefault();
+                }
+            }
+
+            function handleMouseMove(e) {
+                if (!isDragging) return;
+                
+                currentX = e.clientX - startX;
+                
+                // Only allow left swipe
+                if (currentX < 0) {
+                    taskElement.style.transform = `translateX(${currentX}px)`;
+                    
+                    // Show delete overlay
+                    const overlay = taskElement.querySelector('.task-delete-overlay');
+                    if (overlay) {
+                        const opacity = Math.min(Math.abs(currentX) / Math.abs(deleteThreshold), 1);
+                        overlay.style.opacity = opacity;
+                    }
+                }
+            }
+
+            function handleTouchEnd() {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                taskElement.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                
+                if (currentX <= deleteThreshold) {
+                    // Delete the task
+                    deleteTaskWithAnimation(taskElement);
+                } else {
+                    // Reset position
+                    taskElement.style.transform = 'translateX(0)';
+                    const overlay = taskElement.querySelector('.task-delete-overlay');
+                    if (overlay) {
+                        overlay.style.opacity = '0';
+                    }
+                }
+                
+                currentX = 0;
+            }
+
+            function handleMouseUp() {
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+                handleTouchEnd();
+            }
+        }
+
+        async function deleteTaskWithAnimation(taskElement) {
+            const taskId = taskElement.dataset.taskId;
+            
+            // Animate out
+            taskElement.style.transform = 'translateX(-150%)';
+            taskElement.style.opacity = '0';
+            
+            setTimeout(async () => {
+                try {
+                    const response = await taskManager.deleteTask(taskId);
+                    
+                    taskElement.remove();
+                    updateTaskCounts();
+                    updateProjectStats();
+                    checkEmptyState();
+                    showNotification('Task deleted successfully', 'success');
+                } catch (error) {
+                    console.error('Error deleting task:', error);
+                    showNotification('Failed to delete task: ' + error.message, 'error');
+                    
+                    // Reset position on error
+                    taskElement.style.transform = 'translateX(0)';
+                    taskElement.style.opacity = '1';
+                }
+            }, 300);
+        }
+
+        // Inline Editing Functions
+        function editTaskTitle(event, taskId) {
+            event.stopPropagation();
+            const titleElement = event.target;
+            const currentTitle = titleElement.textContent;
+            
+            titleElement.contentEditable = true;
+            titleElement.focus();
+            
+            // Select all text
+            const range = document.createRange();
+            range.selectNodeContents(titleElement);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            
+            titleElement.classList.add('editing');
+            
+            titleElement.addEventListener('blur', async () => {
+                titleElement.contentEditable = false;
+                titleElement.classList.remove('editing');
+                const newTitle = titleElement.textContent.trim();
+                
+                if (newTitle && newTitle !== currentTitle) {
+                    await updateTaskField(taskId, 'title', newTitle);
+                } else {
+                    titleElement.textContent = currentTitle;
+                }
+            }, { once: true });
+            
+            titleElement.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    titleElement.blur();
+                } else if (e.key === 'Escape') {
+                    titleElement.textContent = currentTitle;
+                    titleElement.blur();
+                }
+            });
+        }
+
+        function editTaskDescription(event, taskId) {
+            event.stopPropagation();
+            const descElement = event.target;
+            const currentDesc = descElement.textContent;
+            
+            descElement.contentEditable = true;
+            descElement.focus();
+            
+            // Select all text
+            const range = document.createRange();
+            range.selectNodeContents(descElement);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            
+            descElement.classList.add('editing');
+            
+            descElement.addEventListener('blur', async () => {
+                descElement.contentEditable = false;
+                descElement.classList.remove('editing');
+                const newDesc = descElement.textContent.trim();
+                
+                if (newDesc && newDesc !== currentDesc) {
+                    await updateTaskField(taskId, 'description', newDesc);
+                } else {
+                    descElement.textContent = currentDesc;
+                }
+            }, { once: true });
+            
+            descElement.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    descElement.textContent = currentDesc;
+                    descElement.blur();
+                }
+            });
+        }
+
+        function editTaskPriority(event, taskId) {
+            event.stopPropagation();
+            const priorityElement = event.target;
+            const currentPriority = priorityElement.classList.contains('high') ? 'high' : 
+                                   priorityElement.classList.contains('medium') ? 'medium' : 'low';
+            
+            // Cycle through priorities
+            const priorities = ['low', 'medium', 'high'];
+            const currentIndex = priorities.indexOf(currentPriority);
+            const newPriority = priorities[(currentIndex + 1) % 3];
+            
+            priorityElement.className = `priority ${newPriority}`;
+            priorityElement.textContent = newPriority.charAt(0).toUpperCase() + newPriority.slice(1);
+            
+            updateTaskField(taskId, 'priority', newPriority);
+        }
+
+        function editTaskDueDate(event, taskId) {
+            event.stopPropagation();
+            const dueDateElement = event.target;
+            
+            // Create date picker input
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.className = 'inline-date-picker';
+            
+            // Get current date
+            const currentText = dueDateElement.textContent.replace('Due: ', '');
+            if (currentText !== 'No due date') {
+                const date = new Date(currentText);
+                input.value = date.toISOString().split('T')[0];
+            }
+            
+            dueDateElement.replaceWith(input);
+            input.focus();
+            
+            input.addEventListener('change', async () => {
+                const newDate = input.value;
+                const formattedDate = new Date(newDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                const newSpan = document.createElement('span');
+                newSpan.className = 'due-date';
+                newSpan.textContent = `Due: ${formattedDate}`;
+                newSpan.onclick = (e) => editTaskDueDate(e, taskId);
+                
+                input.replaceWith(newSpan);
+                
+                await updateTaskField(taskId, 'dueDate', newDate);
+            });
+            
+            input.addEventListener('blur', () => {
+                const newSpan = document.createElement('span');
+                newSpan.className = 'due-date';
+                newSpan.textContent = dueDateElement.textContent || 'Due: No due date';
+                newSpan.onclick = (e) => editTaskDueDate(e, taskId);
+                
+                input.replaceWith(newSpan);
+            }, { once: true });
+        }
+
+        async function updateTaskField(taskId, field, value) {
+            try {
+                // Get current task data
+                const allTasks = await taskManager.getTasks();
+                const currentTask = allTasks.find(t => t.id == taskId);
+                
+                if (!currentTask) {
+                    throw new Error('Task not found');
+                }
+                
+                // Update the field
+                const updatedTask = { ...currentTask, [field]: value };
+                
+                await taskManager.updateTask(taskId, updatedTask);
+                
+                showNotification(`Task ${field} updated successfully`, 'success');
+            } catch (error) {
+                console.error('Error updating task:', error);
+                showNotification('Failed to update task: ' + error.message, 'error');
+            }
+        }
+
+        // Task Management Functions (Legacy - kept for compatibility)
         function editTask(taskId) {
-            showNotification('Edit functionality coming soon!', 'info');
+            // Inline editing is now the default
+            showNotification('Click on any field to edit', 'info');
         }
 
         async function deleteTask(taskId) {
@@ -1014,6 +1303,11 @@
                 
                 // Load existing tasks
                 await loadAllTasks();
+                
+                // Initialize swipe-to-delete for all existing tasks
+                document.querySelectorAll('.task-card').forEach(taskElement => {
+                    initializeSwipeToDelete(taskElement);
+                });
             } catch (error) {
                 console.error('❌ TaskManager initialization failed:', error);
                 showNotification('Working in offline mode', 'warning');
