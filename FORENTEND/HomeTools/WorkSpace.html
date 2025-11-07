@@ -439,18 +439,31 @@
                 const targetList = ev.currentTarget;
                 const targetColumn = targetList.closest('.board-column');
                 const newStatus = targetColumn.dataset.status;
-                const taskId = draggedElement.dataset.taskId; // Keep as string for MongoDB ObjectId
+                const taskId = draggedElement.dataset.taskId;
                 
                 try {
-                    // Get current task data
-                    const allTasks = await taskManager.getTasks();
-                    const currentTask = allTasks.find(t => t.id == taskId);
+                    console.log('Moving task:', taskId, 'to status:', newStatus);
                     
-                    if (currentTask) {
-                        // Update task with new status
-                        const updatedTask = { ...currentTask, status: newStatus };
-                        await taskManager.updateTask(taskId, updatedTask);
+                    // Get current task data from taskManager
+                    let currentTask = null;
+                    
+                    // Try to find task in taskManager.tasks array
+                    if (taskManager && taskManager.tasks) {
+                        currentTask = taskManager.tasks.find(t => t.id == taskId || t.id === taskId);
                     }
+                    
+                    if (!currentTask) {
+                        console.error('Task not found in taskManager:', taskId);
+                        throw new Error('Task not found');
+                    }
+                    
+                    console.log('Found task:', currentTask);
+                    
+                    // Update task with new status
+                    const updatedTask = { ...currentTask, status: newStatus };
+                    
+                    // Update via API
+                    await taskManager.updateTask(taskId, updatedTask);
                     
                     // Move the task in UI
                     targetList.appendChild(draggedElement);
@@ -471,9 +484,10 @@
                     showNotification('Task moved successfully!', 'success');
                 } catch (error) {
                     console.error('Failed to update task status:', error);
-                    showNotification('Failed to move task. Please try again.', 'error');
+                    showNotification('Failed to move task: ' + error.message, 'error');
                 }
                 
+                draggedElement.classList.remove('dragging');
                 draggedElement = null;
             }
         }
@@ -1012,17 +1026,28 @@
 
         async function updateTaskField(taskId, field, value) {
             try {
-                // Get current task data
-                const allTasks = await taskManager.getTasks();
-                const currentTask = allTasks.find(t => t.id == taskId);
+                console.log('Updating task field:', taskId, field, value);
+                
+                // Get current task data from taskManager.tasks array
+                let currentTask = null;
+                
+                if (taskManager && taskManager.tasks) {
+                    currentTask = taskManager.tasks.find(t => t.id == taskId || t.id === taskId);
+                }
                 
                 if (!currentTask) {
+                    console.error('Task not found in taskManager:', taskId);
                     throw new Error('Task not found');
                 }
+                
+                console.log('Current task:', currentTask);
                 
                 // Update the field
                 const updatedTask = { ...currentTask, [field]: value };
                 
+                console.log('Updated task:', updatedTask);
+                
+                // Update via API
                 await taskManager.updateTask(taskId, updatedTask);
                 
                 showNotification(`Task ${field} updated successfully`, 'success');
