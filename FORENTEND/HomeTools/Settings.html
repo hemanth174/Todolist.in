@@ -393,21 +393,12 @@
                 const token = localStorage.getItem('token');
                 const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
 
-                console.log('Loading active devices for user:', user.id);
-                console.log('API URL:', API_URL);
-
                 if (!token || !user.id) {
-                    devicesList.innerHTML = `
-                        <div class="no-devices">
-                            <p>⚠️ Please log in to view active sessions</p>
-                        </div>
-                    `;
+                    showNoAuthState(devicesList);
                     return;
                 }
 
                 const url = `${API_URL}/users/${user.id}/sessions`;
-                console.log('Fetching from:', url);
-
                 const response = await fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -415,156 +406,266 @@
                     }
                 });
 
-                console.log('Response status:', response.status);
-
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    console.error('Error response:', errorData);
-                    
-                    // Check if token expired (only for actual authentication errors)
-                    if (response.status === 403 || response.status === 401) {
-                        // Only show expiry if explicitly stated in error
-                        if (errorData.error && errorData.error.includes('expired')) {
-                            devicesList.innerHTML = `
-                                <div class="error-message">
-                                    <p>⚠️ Your session has expired</p>
-                                    <p style="font-size: 0.9rem; margin-top: 10px;">Please log out and log back in to continue.</p>
-                                    <button class="btn-primary" onclick="handleLogout()" style="margin-top: 15px;">
-                                        🚪 Logout
-                                    </button>
-                                </div>
-                            `;
-                            document.getElementById('deviceCount').textContent = 'Session Expired';
-                            return;
-                        } else {
-                            // Otherwise it might be a missing table/data issue
-                            devicesList.innerHTML = `
-                                <div class="no-devices">
-                                    <p>📱 No device sessions found</p>
-                                    <p style="font-size: 0.9rem; margin-top: 10px;">Your login sessions will appear here.</p>
-                                </div>
-                            `;
-                            document.getElementById('deviceCount').textContent = '0 Devices';
-                            return;
-                        }
-                    }
-                    
-                    throw new Error(errorData.error || 'Failed to fetch sessions');
+                    await handleDeviceError(response, devicesList);
+                    return;
                 }
 
                 const data = await response.json();
-                console.log('Sessions data:', data);
                 
-                // Check if table doesn't exist yet
+                // Handle different response states
                 if (data.message && data.message.includes('not yet initialized')) {
-                    devicesList.innerHTML = `
-                        <div class="no-devices">
-                            <p>⚠️ Session tracking not yet initialized</p>
-                            <p style="font-size: 0.9rem; margin-top: 10px;">Please log out and log back in to enable device tracking.</p>
-                        </div>
-                    `;
-                    document.getElementById('deviceCount').textContent = '0 Devices';
+                    showInitializationMessage(devicesList);
+                    return;
+                }
+
+                if (!data.sessions || data.sessions.length === 0) {
+                    showNoDevicesState(devicesList);
                     return;
                 }
                 
                 displayDevices(data.sessions);
-                
-                // Update device count
-                document.getElementById('deviceCount').textContent = 
-                    `${data.count} Active ${data.count === 1 ? 'Device' : 'Devices'}`;
+                updateDeviceCount(data.count);
 
             } catch (error) {
                 console.error('Error loading active devices:', error);
-                devicesList.innerHTML = `
-                    <div class="error-message">
-                        <p>❌ Failed to load active sessions</p>
-                        <p style="font-size: 0.85rem; margin-top: 10px;">Error: ${error.message}</p>
-                        <p style="font-size: 0.85rem;">Please refresh the page or try logging out and back in.</p>
-                        <button class="btn-primary" onclick="location.reload()" style="margin-top: 15px;">
-                            🔄 Refresh Page
-                        </button>
-                        <button class="btn-secondary" onclick="handleLogout()" style="margin-top: 15px; margin-left: 10px;">
-                            🚪 Logout
-                        </button>
-                    </div>
-                `;
-                document.getElementById('deviceCount').textContent = 'Error';
-                
-                // Stop auto-refresh on error
-                clearInterval(refreshInterval);
+                showErrorState(devicesList, error.message);
             }
         }
 
-        // Display devices in the UI
+        // Helper functions for different states
+        function showNoAuthState(container) {
+            container.innerHTML = `
+                <div class="auth-required-state">
+                    <div class="state-icon">🔐</div>
+                    <h3>Authentication Required</h3>
+                    <p>Please log in to view your active sessions</p>
+                    <button class="btn-primary" onclick="handleLogout()">
+                        🚪 Go to Login
+                    </button>
+                </div>
+            `;
+            document.getElementById('deviceCount').textContent = 'Not Available';
+        }
+
+        function showInitializationMessage(container) {
+            container.innerHTML = `
+                <div class="initialization-state">
+                    <div class="state-icon">⚡</div>
+                    <h3>Session Tracking Starting</h3>
+                    <p>Device tracking will begin with your next login session.</p>
+                    <p class="state-hint">Log out and log back in to start tracking your devices.</p>
+                    <button class="btn-secondary" onclick="handleLogout()">
+                        🔄 Restart Session
+                    </button>
+                </div>
+            `;
+            document.getElementById('deviceCount').textContent = 'Initializing';
+        }
+
+        function showNoDevicesState(container) {
+            container.innerHTML = `
+                <div class="no-devices-state">
+                    <div class="state-icon">📱</div>
+                    <h3>No Active Sessions</h3>
+                    <p>You don't have any active device sessions at the moment.</p>
+                    <p class="state-hint">Sessions will appear here when you log in from different devices.</p>
+                </div>
+            `;
+            document.getElementById('deviceCount').textContent = '0 Devices';
+        }
+
+        function showErrorState(container, errorMessage) {
+            container.innerHTML = `
+                <div class="error-state">
+                    <div class="state-icon">⚠️</div>
+                    <h3>Unable to Load Sessions</h3>
+                    <p>We couldn't fetch your active devices right now.</p>
+                    <p class="error-details">${errorMessage}</p>
+                    <div class="error-actions">
+                        <button class="btn-primary" onclick="loadActiveDevices()">
+                            🔄 Retry
+                        </button>
+                        <button class="btn-secondary" onclick="handleLogout()">
+                            🚪 Logout & Login Again
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('deviceCount').textContent = 'Error';
+            clearInterval(refreshInterval);
+        }
+
+        async function handleDeviceError(response, container) {
+            const errorData = await response.json().catch(() => ({}));
+            
+            if (response.status === 403 || response.status === 401) {
+                if (errorData.error && errorData.error.includes('expired')) {
+                    container.innerHTML = `
+                        <div class="session-expired-state">
+                            <div class="state-icon">⏰</div>
+                            <h3>Session Expired</h3>
+                            <p>Your login session has expired for security reasons.</p>
+                            <p class="state-hint">Please log in again to continue managing your devices.</p>
+                            <button class="btn-primary" onclick="handleLogout()">
+                                � Login Again
+                            </button>
+                        </div>
+                    `;
+                    document.getElementById('deviceCount').textContent = 'Expired';
+                } else {
+                    showNoDevicesState(container);
+                }
+            } else {
+                throw new Error(errorData.error || `Server error: ${response.status}`);
+            }
+        }
+
+        function updateDeviceCount(count) {
+            const countElement = document.getElementById('deviceCount');
+            countElement.textContent = `${count} Active ${count === 1 ? 'Device' : 'Devices'}`;
+            
+            // Add visual indicator for count
+            countElement.className = count > 0 ? 'device-count active' : 'device-count';
+        }
+
+        // Display devices in the UI with improved formatting
         function displayDevices(sessions) {
             const devicesList = document.getElementById('activeDevicesList');
 
             if (!sessions || sessions.length === 0) {
-                devicesList.innerHTML = `
-                    <div class="no-devices">
-                        <p>📱 No active sessions found</p>
-                    </div>
-                `;
+                showNoDevicesState(devicesList);
                 return;
             }
 
-            devicesList.innerHTML = sessions.map((session, index) => {
+            // Sort sessions: current device first, then by last active
+            const sortedSessions = sessions.sort((a, b) => {
+                // Current device (most recent) should be first
+                if (a.last_active !== b.last_active) {
+                    return new Date(b.last_active) - new Date(a.last_active);
+                }
+                return 0;
+            });
+
+            devicesList.innerHTML = sortedSessions.map((session, index) => {
                 const lastActive = new Date(session.last_active);
                 const createdAt = new Date(session.created_at);
-                const isCurrentDevice = index === 0; // First one is usually current
+                const isCurrentDevice = index === 0; // Most recent session is likely current
+                const timeAgo = formatTimeAgo(lastActive);
+                const isOnline = isDeviceOnline(lastActive);
 
                 return `
-                    <div class="device-card ${isCurrentDevice ? 'current-device' : ''}">
-                        <div class="device-icon">
-                            ${getDeviceIcon(session.os)}
-                        </div>
-                        <div class="device-info">
-                            <div class="device-name">
-                                ${session.device_name}
-                                ${isCurrentDevice ? '<span class="current-badge">Current</span>' : ''}
+                    <div class="device-card ${isCurrentDevice ? 'current-device' : ''} ${isOnline ? 'online' : 'offline'}">
+                        <div class="device-header">
+                            <div class="device-icon">
+                                ${getDeviceIcon(session.os)}
                             </div>
-                            <div class="device-details">
-                                <span>🌐 ${session.ip_address || 'Unknown'}</span>
-                                <span>⏰ ${formatTimeAgo(lastActive)}</span>
+                            <div class="device-info">
+                                <div class="device-name">
+                                    ${session.device_name || 'Unknown Device'}
+                                    ${isCurrentDevice ? '<span class="current-badge">This Device</span>' : ''}
+                                    <span class="online-indicator ${isOnline ? 'online' : 'offline'}">
+                                        ${isOnline ? '🟢' : '🔴'}
+                                    </span>
+                                </div>
+                                <div class="device-details">
+                                    <p>
+                                        <span class="detail-icon">🌐</span>
+                                        <span class="detail-text">${session.ip_address || 'Unknown Location'}</span>
+                                    </p>
+                                    <p>
+                                        <span class="detail-icon">⏰</span>
+                                        <span class="detail-text">Last active: ${timeAgo}</span>
+                                    </p>
+                                    <p>
+                                        <span class="detail-icon">📅</span>
+                                        <span class="detail-text">Started: ${formatDate(createdAt)}</span>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         <div class="device-actions">
                             ${!isCurrentDevice ? `
-                                <button class="btn-logout-device" onclick="logoutDevice(${session.id}, '${session.device_name}')">
-                                    🚪 Logout
+                                <button class="btn-logout-device" onclick="logoutDevice(${session.id}, '${session.device_name || 'Unknown Device'}')">
+                                    🚪 Logout Device
                                 </button>
-                            ` : ''}
+                            ` : `
+                                <div class="current-device-notice">
+                                    <span class="current-icon">👆</span>
+                                    <span>You're using this device now</span>
+                                </div>
+                            `}
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Get device icon based on OS
+        // Enhanced device icon mapping
         function getDeviceIcon(os) {
             const icons = {
                 'Windows': '💻',
                 'macOS': '🖥️',
                 'Linux': '🐧',
                 'Android': '📱',
-                'iOS': '📱'
+                'iOS': '📱',
+                'Unknown OS': '🌐'
             };
             return icons[os] || '🌐';
         }
 
-        // Format time ago
+        // Check if device is considered online (active within last 5 minutes)
+        function isDeviceOnline(lastActive) {
+            const now = new Date();
+            const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+            return new Date(lastActive) > fiveMinutesAgo;
+        }
+
+        // Enhanced time formatting
         function formatTimeAgo(date) {
             const seconds = Math.floor((new Date() - date) / 1000);
             
-            if (seconds < 60) return 'Just now';
-            if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
-            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-            return `${Math.floor(seconds / 86400)} days ago`;
+            if (seconds < 30) return 'Just now';
+            if (seconds < 60) return `${seconds} seconds ago`;
+            if (seconds < 3600) {
+                const minutes = Math.floor(seconds / 60);
+                return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            }
+            if (seconds < 86400) {
+                const hours = Math.floor(seconds / 3600);
+                return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            }
+            const days = Math.floor(seconds / 86400);
+            if (days < 7) {
+                return `${days} day${days > 1 ? 's' : ''} ago`;
+            }
+            
+            // For older dates, show actual date
+            return formatDate(date);
         }
 
-        // Logout from specific device
+        // Format date nicely
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Enhanced logout from specific device
         async function logoutDevice(sessionId, deviceName) {
-            if (!confirm(`Logout from "${deviceName}"?`)) return;
+            if (!confirm(`Are you sure you want to logout from "${deviceName}"?\n\nThis will end that device's session immediately.`)) {
+                return;
+            }
+
+            const logoutBtn = event.target;
+            const originalText = logoutBtn.innerHTML;
+            
+            // Show loading state
+            logoutBtn.disabled = true;
+            logoutBtn.innerHTML = '⏳ Logging out...';
 
             try {
                 const token = localStorage.getItem('token');
@@ -576,19 +677,39 @@
                     }
                 });
 
-                if (!response.ok) throw new Error('Failed');
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || 'Failed to logout device');
+                }
 
-                alert(`✅ Logged out from "${deviceName}"`);
-                loadActiveDevices();
+                // Success - show feedback and reload devices
+                showToast(`✅ Successfully logged out from "${deviceName}"`, 'success');
+                await loadActiveDevices(); // Refresh the list
 
             } catch (error) {
-                alert('❌ Failed to logout device');
+                console.error('Device logout error:', error);
+                showToast(`❌ Failed to logout from "${deviceName}": ${error.message}`, 'error');
+                
+                // Restore button state
+                logoutBtn.disabled = false;
+                logoutBtn.innerHTML = originalText;
             }
         }
 
-        // Logout from all other devices
+        // Enhanced logout from all other devices
         async function logoutAllOtherDevices() {
-            if (!confirm('Logout from all other devices?')) return;
+            const confirmMessage = `⚠️ Logout from ALL other devices?\n\nThis will:\n• End all other active sessions\n• Force other devices to login again\n• Keep your current session active\n\nThis action cannot be undone.`;
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            const logoutBtn = document.getElementById('logoutAllBtn');
+            const originalText = logoutBtn.innerHTML;
+            
+            // Show loading state
+            logoutBtn.disabled = true;
+            logoutBtn.innerHTML = '⏳ Logging out all devices...';
 
             try {
                 const token = localStorage.getItem('token');
@@ -602,32 +723,88 @@
                     }
                 });
 
-                if (!response.ok) throw new Error('Failed');
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || 'Failed to logout from all devices');
+                }
 
                 const data = await response.json();
-                alert(data.message);
-                loadActiveDevices();
+                
+                // Show success message with count
+                const count = data.count || 0;
+                const message = count > 0 
+                    ? `✅ Successfully logged out from ${count} other device${count > 1 ? 's' : ''}`
+                    : '✅ No other active devices to logout';
+                    
+                showToast(message, 'success');
+                
+                // Refresh the device list
+                await loadActiveDevices();
 
             } catch (error) {
-                alert('❌ Failed to logout from all devices');
+                console.error('Logout all devices error:', error);
+                showToast(`❌ Failed to logout from all devices: ${error.message}`, 'error');
+            } finally {
+                // Restore button state
+                logoutBtn.disabled = false;
+                logoutBtn.innerHTML = originalText;
             }
         }
 
-        // Auto-refresh every 30 seconds
-        let refreshInterval = setInterval(loadActiveDevices, 30000);
+        // Enhanced auto-refresh with better error handling
+        let refreshInterval;
+        let refreshAttempts = 0;
+        const MAX_REFRESH_ATTEMPTS = 3;
+
+        function startAutoRefresh() {
+            // Clear any existing interval
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+
+            // Auto-refresh every 30 seconds, but stop after too many failures
+            refreshInterval = setInterval(async () => {
+                try {
+                    await loadActiveDevices();
+                    refreshAttempts = 0; // Reset on success
+                } catch (error) {
+                    refreshAttempts++;
+                    console.warn(`Auto-refresh attempt ${refreshAttempts} failed:`, error);
+                    
+                    if (refreshAttempts >= MAX_REFRESH_ATTEMPTS) {
+                        console.warn('Too many refresh failures, stopping auto-refresh');
+                        clearInterval(refreshInterval);
+                        showToast('⚠️ Stopped auto-refreshing devices due to connection issues', 'warning');
+                    }
+                }
+            }, 30000);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
 
         // ==================== LOGOUT FUNCTIONALITY ====================
         
         function handleLogout() {
-            // Clear interval
-            clearInterval(refreshInterval);
+            // Stop auto-refresh immediately
+            stopAutoRefresh();
             
-            // Clear storage
+            // Clear all stored data
             localStorage.removeItem('token');
             localStorage.removeItem('loggedInUser');
+            localStorage.removeItem('todoSettings'); // Optional: keep user settings
             
-            // Redirect to landing page
-            window.location.href = '../../LandingPage.html';
+            // Show feedback
+            showToast('👋 Logged out successfully', 'success');
+            
+            // Redirect after a brief delay
+            setTimeout(() => {
+                window.location.href = '../../LandingPage.html';
+            }, 1000);
         }
 
         // ==================== TOAST NOTIFICATIONS ====================
@@ -754,7 +931,10 @@
             const user = localStorage.getItem('loggedInUser');
             
             if (!token || !user) {
-                window.location.href = '../../LandingPage.html';
+                showToast('⚠️ Please log in to access settings', 'warning');
+                setTimeout(() => {
+                    window.location.href = '../../LandingPage.html';
+                }, 2000);
                 return false;
             }
             return true;
@@ -765,10 +945,20 @@
             // Check authentication first
             if (!checkAuth()) return;
             
+            // Load user data and settings
             loadUserProfile();
             loadSettings();
-            loadActiveDevices();
             checkNotificationPermission();
+            
+            // Load devices and start monitoring
+            loadActiveDevices().then(() => {
+                startAutoRefresh();
+            });
+        });
+
+        // Cleanup when page is unloaded
+        window.addEventListener('beforeunload', () => {
+            stopAutoRefresh();
         });
     </script>
     
