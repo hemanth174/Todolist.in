@@ -792,26 +792,64 @@ app.post('/notifications/send', authenticateToken, async (req, res) => {
             return res.status(400).json({ error: 'Title and message are required' });
         }
 
-        // Save notification to database
+        // Save notification to admin history
         await db.run(
             `INSERT INTO push_notifications (title, message, target_users, sent_by) 
              VALUES (?, ?, ?, ?)`,
             [title, message, targetUsers || 'all', sentBy]
         );
 
-        // Get all active subscriptions
+        // Create user_notifications table if it doesn't exist
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS user_notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                message TEXT NOT NULL,
+                read BOOLEAN DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        `);
+
+        // Get target users and send notifications
+        let targetUserIds = [];
+        if (targetUsers === 'all' || !targetUsers) {
+            const allUsers = await db.all('SELECT id FROM users');
+            targetUserIds = allUsers.map(user => user.id);
+        } else {
+            // Parse specific user IDs if provided (comma-separated)
+            targetUserIds = targetUsers.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+        }
+
+        // Insert notification for each target user
+        const insertPromises = targetUserIds.map(userId => 
+            db.run(
+                `INSERT INTO user_notifications (user_id, title, message) 
+                 VALUES (?, ?, ?)`,
+                [userId, title, message]
+            )
+        );
+        
+        await Promise.all(insertPromises);
+
+        // Get all active subscriptions for push notifications
         let subscriptions;
-        if (targetUsers === 'all') {
+        if (targetUsers === 'all' || !targetUsers) {
             subscriptions = await db.all('SELECT * FROM notification_subscriptions');
         } else {
-            // Can implement specific user targeting later
-            subscriptions = await db.all('SELECT * FROM notification_subscriptions');
+            subscriptions = await db.all(
+                `SELECT * FROM notification_subscriptions 
+                 WHERE user_id IN (${targetUserIds.map(() => '?').join(',')})`,
+                targetUserIds
+            );
         }
 
         res.json({ 
             message: 'Notification sent successfully', 
             success: true,
-            recipientCount: subscriptions.length
+            recipientCount: targetUserIds.length,
+            pushSubscriptions: subscriptions.length
         });
     } catch (error) {
         console.error('Send notification error:', error);
@@ -850,6 +888,149 @@ app.get('/notifications/user-count', authenticateToken, async (req, res) => {
         });
     } catch (error) {
         console.error('Get user count error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ==================== USER NOTIFICATION ENDPOINTS ====================
+
+// 📱 Get user notifications
+app.get('/notifications/user', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        // Create user_notifications table if it doesn't exist
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS user_notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                message TEXT NOT NULL,
+                read BOOLEAN DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        `);
+        
+        const notifications = await db.all(
+            `SELECT * FROM user_notifications 
+             WHERE user_id = ? 
+             ORDER BY created_at DESC`,
+            [userId]
+        );
+
+        res.json({ notifications, success: true });
+    } catch (error) {
+        console.error('Get user notifications error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 🔢 Get unread notification count
+app.get('/notifications/unread-count', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        const result = await db.get(
+            `SELECT COUNT(*) as count FROM user_notifications 
+             WHERE user_id = ? AND read = 0`,
+            [userId]
+        );
+
+        res.json({ count: result.count || 0, success: true });
+    } catch (error) {
+        console.error('Get unread count error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ✅ Mark notification as read
+app.put('/notifications/:id/read', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const notificationId = req.params.id;
+        
+        const result = await db.run(
+            `UPDATE user_notifications 
+             SET read = 1 
+             WHERE id = ? AND user_id = ?`,
+            [notificationId, userId]
+        );
+        
+        if (result.changes === 0) {
+            return res.status(404).json({ error: 'Notification not found' });
+        }
+
+        res.json({ message: 'Notification marked as read', success: true });
+    } catch (error) {
+        console.error('Mark as read error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ✅ Mark all notifications as read
+app.put('/notifications/mark-all-read', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        const result = await db.run(
+            `UPDATE user_notifications 
+             SET read = 1 
+             WHERE user_id = ? AND read = 0`,
+            [userId]
+        );
+
+        res.json({ 
+            message: 'All notifications marked as read', 
+            updated: result.changes,
+            success: true 
+        });
+    } catch (error) {
+        console.error('Mark all as read error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 🗑️ Delete notification
+app.delete('/notifications/:id', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const notificationId = req.params.id;
+        
+        const result = await db.run(
+            `DELETE FROM user_notifications 
+             WHERE id = ? AND user_id = ?`,
+            [notificationId, userId]
+        );
+        
+        if (result.changes === 0) {
+            return res.status(404).json({ error: 'Notification not found' });
+        }
+
+        res.json({ message: 'Notification deleted', success: true });
+    } catch (error) {
+        console.error('Delete notification error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 🗑️ Clear all notifications
+app.delete('/notifications/clear-all', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        const result = await db.run(
+            `DELETE FROM user_notifications WHERE user_id = ?`,
+            [userId]
+        );
+
+        res.json({ 
+            message: 'All notifications cleared', 
+            deleted: result.changes,
+            success: true 
+        });
+    } catch (error) {
+        console.error('Clear all notifications error:', error);
         res.status(500).json({ error: error.message });
     }
 });
