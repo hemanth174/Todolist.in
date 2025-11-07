@@ -421,19 +421,32 @@
                     const errorData = await response.json().catch(() => ({}));
                     console.error('Error response:', errorData);
                     
-                    // Check if token expired
+                    // Check if token expired (only for actual authentication errors)
                     if (response.status === 403 || response.status === 401) {
-                        devicesList.innerHTML = `
-                            <div class="error-message">
-                                <p>⚠️ Your session has expired</p>
-                                <p style="font-size: 0.9rem; margin-top: 10px;">Please log out and log back in to continue.</p>
-                                <button class="btn-primary" onclick="handleLogout()" style="margin-top: 15px;">
-                                    🚪 Logout
-                                </button>
-                            </div>
-                        `;
-                        document.getElementById('deviceCount').textContent = 'Session Expired';
-                        return;
+                        // Only show expiry if explicitly stated in error
+                        if (errorData.error && errorData.error.includes('expired')) {
+                            devicesList.innerHTML = `
+                                <div class="error-message">
+                                    <p>⚠️ Your session has expired</p>
+                                    <p style="font-size: 0.9rem; margin-top: 10px;">Please log out and log back in to continue.</p>
+                                    <button class="btn-primary" onclick="handleLogout()" style="margin-top: 15px;">
+                                        🚪 Logout
+                                    </button>
+                                </div>
+                            `;
+                            document.getElementById('deviceCount').textContent = 'Session Expired';
+                            return;
+                        } else {
+                            // Otherwise it might be a missing table/data issue
+                            devicesList.innerHTML = `
+                                <div class="no-devices">
+                                    <p>📱 No device sessions found</p>
+                                    <p style="font-size: 0.9rem; margin-top: 10px;">Your login sessions will appear here.</p>
+                                </div>
+                            `;
+                            document.getElementById('deviceCount').textContent = '0 Devices';
+                            return;
+                        }
                     }
                     
                     throw new Error(errorData.error || 'Failed to fetch sessions');

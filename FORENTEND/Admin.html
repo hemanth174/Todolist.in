@@ -549,13 +549,11 @@
 
         <form id="loginForm">
             <div class="form-group">
-                <label for="adminEmail">📧 Email Address</label>
-                <input type="email" id="adminEmail" placeholder="Enter admin email" required />
-            </div>
-
-            <div class="form-group">
-                <label for="adminPassword">🔑 Password</label>
-                <input type="password" id="adminPassword" placeholder="Enter password" required />
+                <label for="adminPassword">� Time-Based Password</label>
+                <input type="password" id="adminPassword" placeholder="Enter current time (e.g., 930)" required />
+                <small style="color: #6c757d; font-size: 0.85rem; margin-top: 5px; display: block;">
+                    Use current time in format: Hour + Minute (e.g., 14:30 → 1430)
+                </small>
             </div>
 
             <button type="submit" class="btn-login" id="loginBtn">
@@ -699,7 +697,6 @@
     </div>
 
     <script>
-        const ADMIN_EMAIL = 'todolist725@gmail.com';
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:3000'
             : 'https://todolist-auth-server.onrender.com';
@@ -718,19 +715,12 @@
 
         // Check if already logged in as admin
         function checkAdminAuth() {
-            const adminLoggedIn = sessionStorage.getItem('adminLoggedIn');
-            const adminEmail = sessionStorage.getItem('adminEmail');
-            const loginTime = sessionStorage.getItem('adminLoginTime');
+            const adminLoggedIn = localStorage.getItem('adminLoggedIn');
             
-            // Check if logged in within last 2 hours
-            if (adminLoggedIn === 'true' && adminEmail === ADMIN_EMAIL) {
-                if (loginTime) {
-                    const timeDiff = Date.now() - parseInt(loginTime);
-                    if (timeDiff < 2 * 60 * 60 * 1000) { // 2 hours
-                        showDashboard();
-                        return true;
-                    }
-                }
+            // No time limit - stays logged in until manually logged out
+            if (adminLoggedIn === 'true') {
+                showDashboard();
+                return true;
             }
             return false;
         }
@@ -749,15 +739,8 @@
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
 
-            const email = document.getElementById('adminEmail').value;
             const password = document.getElementById('adminPassword').value;
             const loginBtn = document.getElementById('loginBtn');
-
-            // Check if email matches admin email
-            if (email !== ADMIN_EMAIL) {
-                showError('❌ Unauthorized: This email is not authorized for admin access');
-                return;
-            }
 
             loginBtn.disabled = true;
             loginBtn.textContent = '🔄 Verifying...';
@@ -767,10 +750,8 @@
 
             // Verify password matches current time
             if (password === correctPassword) {
-                // Store admin credentials
-                sessionStorage.setItem('adminLoggedIn', 'true');
-                sessionStorage.setItem('adminEmail', email);
-                sessionStorage.setItem('adminLoginTime', Date.now().toString());
+                // Store admin credentials in localStorage (persistent)
+                localStorage.setItem('adminLoggedIn', 'true');
                 
                 // Show dashboard
                 showDashboard();
@@ -848,9 +829,7 @@
 
         // Logout
         function logout() {
-            sessionStorage.removeItem('adminLoggedIn');
-            sessionStorage.removeItem('adminEmail');
-            sessionStorage.removeItem('adminLoginTime');
+            localStorage.removeItem('adminLoggedIn');
             location.reload();
         }
 
