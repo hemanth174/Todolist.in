@@ -54,6 +54,11 @@
                     <span class="btn-icon">📈</span>
                     <span class="btn-text">Reports</span>
                 </button>
+                <!-- Delete Zone (appears when dragging) -->
+                <div class="quick-btn delete-zone" id="deleteZone" style="display: none;">
+                    <span class="btn-icon">🗑️</span>
+                    <span class="btn-text">Drop to Delete</span>
+                </div>
             </div>
 
             <!-- Empty State -->
@@ -399,7 +404,17 @@
         function dragTask(ev) {
             draggedElement = ev.target;
             ev.dataTransfer.effectAllowed = "move";
+            ev.dataTransfer.setData("text/plain", ev.target.dataset.taskId);
             ev.target.classList.add('dragging');
+            
+            // Show delete zone with animation
+            const deleteZone = document.getElementById('deleteZone');
+            if (deleteZone) {
+                deleteZone.style.display = 'flex';
+                setTimeout(() => {
+                    deleteZone.classList.add('active');
+                }, 10);
+            }
             
             // Remove drag-over class from all columns
             document.querySelectorAll('.task-list').forEach(list => {
@@ -411,6 +426,15 @@
             ev.preventDefault();
             ev.currentTarget.classList.remove('drag-over');
             
+            // Hide delete zone
+            const deleteZone = document.getElementById('deleteZone');
+            if (deleteZone) {
+                deleteZone.classList.remove('active');
+                setTimeout(() => {
+                    deleteZone.style.display = 'none';
+                }, 300);
+            }
+            
             if (draggedElement) {
                 const targetList = ev.currentTarget;
                 const targetColumn = targetList.closest('.board-column');
@@ -418,8 +442,15 @@
                 const taskId = draggedElement.dataset.taskId; // Keep as string for MongoDB ObjectId
                 
                 try {
-                    // Update task in API
-                    await taskManager.updateTask(taskId, { status: newStatus });
+                    // Get current task data
+                    const allTasks = await taskManager.getTasks();
+                    const currentTask = allTasks.find(t => t.id == taskId);
+                    
+                    if (currentTask) {
+                        // Update task with new status
+                        const updatedTask = { ...currentTask, status: newStatus };
+                        await taskManager.updateTask(taskId, updatedTask);
+                    }
                     
                     // Move the task in UI
                     targetList.appendChild(draggedElement);
@@ -444,6 +475,76 @@
                 }
                 
                 draggedElement = null;
+            }
+        }
+        
+        // Add dragend event to hide delete zone
+        function handleDragEnd(ev) {
+            const deleteZone = document.getElementById('deleteZone');
+            if (deleteZone) {
+                deleteZone.classList.remove('active');
+                setTimeout(() => {
+                    deleteZone.style.display = 'none';
+                }, 300);
+            }
+            
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+            }
+            
+            document.querySelectorAll('.task-list').forEach(list => {
+                list.classList.remove('drag-over');
+            });
+        }
+        
+        // Delete zone drop handler
+        function dropOnDeleteZone(ev) {
+            ev.preventDefault();
+            const deleteZone = document.getElementById('deleteZone');
+            
+            if (draggedElement && deleteZone) {
+                const taskId = draggedElement.dataset.taskId;
+                
+                // Animate deletion
+                draggedElement.style.transform = 'scale(0) rotate(180deg)';
+                draggedElement.style.opacity = '0';
+                deleteZone.classList.add('deleting');
+                
+                setTimeout(async () => {
+                    try {
+                        await taskManager.deleteTask(taskId);
+                        draggedElement.remove();
+                        updateTaskCounts();
+                        updateProjectStats();
+                        checkEmptyState();
+                        showNotification('Task deleted successfully!', 'success');
+                    } catch (error) {
+                        console.error('Error deleting task:', error);
+                        showNotification('Failed to delete task', 'error');
+                        draggedElement.style.transform = '';
+                        draggedElement.style.opacity = '';
+                    }
+                    
+                    deleteZone.classList.remove('active', 'deleting');
+                    deleteZone.style.display = 'none';
+                    draggedElement = null;
+                }, 300);
+            }
+        }
+        
+        // Allow drop on delete zone
+        function allowDropOnDeleteZone(ev) {
+            ev.preventDefault();
+            const deleteZone = document.getElementById('deleteZone');
+            if (deleteZone) {
+                deleteZone.classList.add('drag-over-delete');
+            }
+        }
+        
+        function dragLeaveDeleteZone(ev) {
+            const deleteZone = document.getElementById('deleteZone');
+            if (deleteZone) {
+                deleteZone.classList.remove('drag-over-delete');
             }
         }
 
@@ -675,7 +776,7 @@
                 'No due date';
 
             const taskHTML = `
-                <div class="task-card" draggable="true" ondragstart="dragTask(event)" data-task-id="${task.id}">
+                <div class="task-card" draggable="true" ondragstart="dragTask(event)" ondragend="handleDragEnd(event)" data-task-id="${task.id}">
                     <div class="task-delete-overlay">
                         <span class="delete-icon">🗑️</span>
                         <span class="delete-text">Delete</span>
@@ -1320,6 +1421,14 @@
             updateTaskCounts();
             updateProjectStats();
             checkEmptyState();
+            
+            // Initialize delete zone
+            const deleteZone = document.getElementById('deleteZone');
+            if (deleteZone) {
+                deleteZone.addEventListener('dragover', allowDropOnDeleteZone);
+                deleteZone.addEventListener('dragleave', dragLeaveDeleteZone);
+                deleteZone.addEventListener('drop', dropOnDeleteZone);
+            }
             
             // Add event listener to create task button as backup
             const createTaskBtn = document.querySelector('.btn-create');

@@ -205,6 +205,60 @@ body {
     font-size: 14px;
 }
 
+/* Delete Zone Styles */
+.delete-zone {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border-color: #dc3545;
+    opacity: 0;
+    transform: scale(0.8);
+    animation: none;
+    pointer-events: none;
+}
+
+.delete-zone.active {
+    opacity: 1;
+    transform: scale(1);
+    animation: pulse 1s ease-in-out infinite;
+    pointer-events: all;
+}
+
+.delete-zone.drag-over-delete {
+    transform: scale(1.1);
+    box-shadow: 0 8px 30px rgba(220, 53, 69, 0.5);
+    animation: shake 0.5s ease-in-out;
+}
+
+.delete-zone.deleting {
+    animation: explode 0.3s ease-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+    50% {
+        box-shadow: 0 6px 25px rgba(220, 53, 69, 0.6);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0) scale(1.1); }
+    25% { transform: translateX(-5px) scale(1.1); }
+    75% { transform: translateX(5px) scale(1.1); }
+}
+
+@keyframes explode {
+    0% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
 /* View Container */
 .view-container {
     margin-bottom: 30px;
