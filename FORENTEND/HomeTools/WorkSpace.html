@@ -776,23 +776,19 @@
                 'No due date';
 
             const taskHTML = `
-                <div class="task-card" draggable="true" ondragstart="dragTask(event)" ondragend="handleDragEnd(event)" data-task-id="${task.id}">
-                    <div class="task-delete-overlay">
-                        <span class="delete-icon">🗑️</span>
-                        <span class="delete-text">Delete</span>
-                    </div>
+                <div class="task-card" draggable="true" data-task-id="${task.id}">
                     <div class="task-content">
                         <div class="task-header">
-                            <h4 class="task-title-editable" onclick="editTaskTitle(event, ${task.id})">${task.title}</h4>
+                            <h4 class="task-title-editable">${task.title}</h4>
                         </div>
-                        <p class="task-description-editable" onclick="editTaskDescription(event, ${task.id})">${task.description}</p>
+                        <p class="task-description-editable">${task.description}</p>
                         ${task.tags && task.tags.length > 0 ? 
                             `<div class="task-tags">${task.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>` : 
                             ''
                         }
                         <div class="task-meta">
-                            <span class="priority ${task.priority}" onclick="editTaskPriority(event, ${task.id})">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
-                            <span class="due-date" onclick="editTaskDueDate(event, ${task.id})">Due: ${formattedDueDate}</span>
+                            <span class="priority ${task.priority}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
+                            <span class="due-date">Due: ${formattedDueDate}</span>
                             <div class="task-progress">
                                 <div class="progress-circle" data-progress="${task.progress || 0}">
                                     <span class="progress-text">${task.progress || 0}%</span>
@@ -814,16 +810,28 @@
                 // Add event listeners to new task
                 const newTaskElement = targetColumn.querySelector(`[data-task-id="${task.id}"]`);
                 if (newTaskElement) {
-                    // Drag end event
-                    newTaskElement.addEventListener('dragend', () => {
-                        newTaskElement.classList.remove('dragging');
-                        document.querySelectorAll('.task-list').forEach(list => {
-                            list.classList.remove('drag-over');
-                        });
-                    });
+                    // Drag events
+                    newTaskElement.addEventListener('dragstart', dragTask);
+                    newTaskElement.addEventListener('dragend', handleDragEnd);
                     
-                    // Initialize swipe-to-delete
-                    initializeSwipeToDelete(newTaskElement);
+                    // Click handlers for inline editing
+                    const titleElement = newTaskElement.querySelector('.task-title-editable');
+                    const descElement = newTaskElement.querySelector('.task-description-editable');
+                    const priorityElement = newTaskElement.querySelector('.priority');
+                    const dueDateElement = newTaskElement.querySelector('.due-date');
+                    
+                    if (titleElement) {
+                        titleElement.addEventListener('click', (e) => editTaskTitle(e, task.id));
+                    }
+                    if (descElement) {
+                        descElement.addEventListener('click', (e) => editTaskDescription(e, task.id));
+                    }
+                    if (priorityElement) {
+                        priorityElement.addEventListener('click', (e) => editTaskPriority(e, task.id));
+                    }
+                    if (dueDateElement) {
+                        dueDateElement.addEventListener('click', (e) => editTaskDueDate(e, task.id));
+                    }
                 }
             }
 
@@ -862,128 +870,6 @@
                 // Ensure empty state is shown when loading fails
                 checkEmptyState();
             }
-        }
-
-        // Swipe to Delete Functionality
-        function initializeSwipeToDelete(taskElement) {
-            let startX = 0;
-            let currentX = 0;
-            let isDragging = false;
-            let deleteThreshold = -100; // Swipe left 100px to delete
-
-            taskElement.addEventListener('touchstart', handleTouchStart, { passive: true });
-            taskElement.addEventListener('touchmove', handleTouchMove, { passive: false });
-            taskElement.addEventListener('touchend', handleTouchEnd);
-
-            taskElement.addEventListener('mousedown', handleMouseDown);
-
-            function handleTouchStart(e) {
-                startX = e.touches[0].clientX;
-                isDragging = true;
-                taskElement.style.transition = 'none';
-            }
-
-            function handleMouseDown(e) {
-                startX = e.clientX;
-                isDragging = true;
-                taskElement.style.transition = 'none';
-                
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-                e.preventDefault();
-            }
-
-            function handleTouchMove(e) {
-                if (!isDragging) return;
-                
-                currentX = e.touches[0].clientX - startX;
-                
-                // Only allow left swipe
-                if (currentX < 0) {
-                    taskElement.style.transform = `translateX(${currentX}px)`;
-                    
-                    // Show delete overlay
-                    const overlay = taskElement.querySelector('.task-delete-overlay');
-                    if (overlay) {
-                        const opacity = Math.min(Math.abs(currentX) / Math.abs(deleteThreshold), 1);
-                        overlay.style.opacity = opacity;
-                    }
-                    
-                    e.preventDefault();
-                }
-            }
-
-            function handleMouseMove(e) {
-                if (!isDragging) return;
-                
-                currentX = e.clientX - startX;
-                
-                // Only allow left swipe
-                if (currentX < 0) {
-                    taskElement.style.transform = `translateX(${currentX}px)`;
-                    
-                    // Show delete overlay
-                    const overlay = taskElement.querySelector('.task-delete-overlay');
-                    if (overlay) {
-                        const opacity = Math.min(Math.abs(currentX) / Math.abs(deleteThreshold), 1);
-                        overlay.style.opacity = opacity;
-                    }
-                }
-            }
-
-            function handleTouchEnd() {
-                if (!isDragging) return;
-                
-                isDragging = false;
-                taskElement.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-                
-                if (currentX <= deleteThreshold) {
-                    // Delete the task
-                    deleteTaskWithAnimation(taskElement);
-                } else {
-                    // Reset position
-                    taskElement.style.transform = 'translateX(0)';
-                    const overlay = taskElement.querySelector('.task-delete-overlay');
-                    if (overlay) {
-                        overlay.style.opacity = '0';
-                    }
-                }
-                
-                currentX = 0;
-            }
-
-            function handleMouseUp() {
-                document.removeEventListener('mousemove', handleMouseMove);
-                document.removeEventListener('mouseup', handleMouseUp);
-                handleTouchEnd();
-            }
-        }
-
-        async function deleteTaskWithAnimation(taskElement) {
-            const taskId = taskElement.dataset.taskId;
-            
-            // Animate out
-            taskElement.style.transform = 'translateX(-150%)';
-            taskElement.style.opacity = '0';
-            
-            setTimeout(async () => {
-                try {
-                    const response = await taskManager.deleteTask(taskId);
-                    
-                    taskElement.remove();
-                    updateTaskCounts();
-                    updateProjectStats();
-                    checkEmptyState();
-                    showNotification('Task deleted successfully', 'success');
-                } catch (error) {
-                    console.error('Error deleting task:', error);
-                    showNotification('Failed to delete task: ' + error.message, 'error');
-                    
-                    // Reset position on error
-                    taskElement.style.transform = 'translateX(0)';
-                    taskElement.style.opacity = '1';
-                }
-            }, 300);
         }
 
         // Inline Editing Functions
@@ -1404,11 +1290,6 @@
                 
                 // Load existing tasks
                 await loadAllTasks();
-                
-                // Initialize swipe-to-delete for all existing tasks
-                document.querySelectorAll('.task-card').forEach(taskElement => {
-                    initializeSwipeToDelete(taskElement);
-                });
             } catch (error) {
                 console.error('❌ TaskManager initialization failed:', error);
                 showNotification('Working in offline mode', 'warning');

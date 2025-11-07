@@ -523,48 +523,13 @@ body {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     position: relative;
     overflow: visible;
-    touch-action: pan-y;
     user-select: none;
-}
-
-/* Delete overlay for swipe-to-delete */
-.task-delete-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, rgba(220, 53, 69, 0.9), rgba(220, 53, 69, 0.7));
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 30px;
-    border-radius: 12px;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 1;
-    transition: opacity 0.2s ease;
-}
-
-.task-delete-overlay .delete-icon {
-    font-size: 32px;
-    margin-right: 10px;
-}
-
-.task-delete-overlay .delete-text {
-    font-size: 18px;
-    font-weight: 600;
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 .task-content {
     position: relative;
-    z-index: 2;
     background: inherit;
     border-radius: 12px;
-    transition: transform 0.3s ease;
 }
 
 .task-card::before {
