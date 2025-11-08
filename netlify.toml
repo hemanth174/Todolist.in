@@ -10,24 +10,40 @@
   # Directory to deploy (relative to base)
   publish = "."
 
-# Redirect rules (optional - if you want to proxy API calls through Netlify)
+# Redirect rules for API calls (optional)
 # [[redirects]]
 #   from = "/api/auth/*"
 #   to = "https://todolist-auth-server.onrender.com/:splat"
 #   status = 200
 #   force = true
-#
-# [[redirects]]
-#   from = "/api/tasks/*"
-#   to = "https://todolist-tasks-server.onrender.com/api/tasks/:splat"
-#   status = 200
-#   force = true
 
-# SPA (Single Page App) fallback - redirect all routes to landing page
+# Handle specific routes first
+[[redirects]]
+  from = "/HomeTools/*"
+  to = "/HomeTools/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/CSSPAge/*"
+  to = "/CSSPAge/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/js/*"
+  to = "/js/:splat"
+  status = 200
+
+# Default route - serve index.html or LandingPage.html
+[[redirects]]
+  from = "/"
+  to = "/LandingPage.html"
+  status = 200
+
+# SPA fallback for unknown routes
 [[redirects]]
   from = "/*"
   to = "/LandingPage.html"
-  status = 200
+  status = 404
 
 # Headers for security
 [[headers]]
