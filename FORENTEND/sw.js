@@ -33,7 +33,7 @@ self.addEventListener('push', event => {
             }
         ],
         data: {
-            url: '/FORENTEND/HomeTools/Notifications.html',
+            url: '/HomeTools/Notifications.html',
             timestamp: Date.now()
         }
     };
@@ -83,7 +83,7 @@ self.addEventListener('notificationclick', event => {
     }
     
     // Default action or 'view' action - open the app
-    const urlToOpen = notificationData.url || '/FORENTEND/HomeTools/Notifications.html';
+    const urlToOpen = notificationData.url || '/HomeTools/Notifications.html';
     
     event.waitUntil(
         clients.matchAll({

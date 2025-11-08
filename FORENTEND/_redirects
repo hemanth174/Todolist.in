@@ -1,0 +1,26 @@
+# Netlify redirects file
+# This ensures proper routing for the TodoList app
+
+# Root redirects to landing page
+/  /LandingPage.html  200
+
+# Login should go to landing page
+/login  /LandingPage.html  200
+
+# Direct access to pages
+/HomeTools/Home.html  /HomeTools/Home.html  200
+/HomeTools/WorkSpace.html  /HomeTools/WorkSpace.html  200
+/HomeTools/Schedule.html  /HomeTools/Schedule.html  200
+/HomeTools/Settings.html  /HomeTools/Settings.html  200
+/HomeTools/Notifications.html  /HomeTools/Notifications.html  200
+
+# Auth pages
+/register  /REgisterPage.html  200
+/REgisterPage.html  /REgisterPage.html  200
+
+# Admin page
+/admin  /Admin.html  200
+/Admin.html  /Admin.html  200
+
+# Fallback - any unmatched route goes to landing page
+/*  /LandingPage.html  404
