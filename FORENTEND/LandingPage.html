@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>TodoList</title>
+    <link rel="icon" type="image/png" href="https://img.icons8.com/3d-fluency/94/test-passed.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -41,13 +42,13 @@
                         <p data-scroll="supportSection">Support</p>
                     </div>
                     <div class = "navElements" id="navButtons">
-                        <!-- Will be populated by JavaScript based on login status -->
+                    
                     </div>
                 </div>
             </nav>
         <div id="homeSection" class = "FirstPage">
                         <div class = "TextElements1 col-12 col-md-6 md-6 sm-12 xs-12 ">
-                            <!-- <h1>Organize Your Life, One at a Time</h1> -->
+                            <h1>Organize Your Life, One at a Time</h1>
                             <button class = "button1" id="mainCTA">Get Started Free</button>
                         </div>
             <div class  ="Img2">
@@ -315,12 +316,8 @@
                 if (token && user) {
                     // User is logged in - show dashboard button
                     navButtons.innerHTML = `
-                        <a href="./HomeTools/Home.html" style="text-decoration: none;">
-                            <p class="para5" style="background: #6a5af9; color: white; padding: 10px 20px; border-radius: 8px;">
-                                Go to Dashboard
-                            </p>
-                        </a>
-                        <p class="para5" id="logoutBtn" style="cursor: pointer; color: #ef4444;">Logout</p>
+                        
+                        <p class="para5" id="logoutBtn" style=" ">Logout</p>
                     `;
 
                     // Update main CTA button

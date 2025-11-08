@@ -32,10 +32,10 @@ loginForm.addEventListener("submit", async (e) => {
 
       // Redirect to dashboard after short delay
       setTimeout(() => {
-        window.location.href = "/HomeTools/Home.html";
+        window.location.href = "/FORENTEND/HomeTools/WorkSpace.html";
       }, 1000);
     } else {
-      toast.error(data.error || "Login failed. Please check your credentials.");
+      toast.error(data.error || "Login failed. Please check your credentials."); 
     }
   } catch (error) {
     // Hide loading toast
