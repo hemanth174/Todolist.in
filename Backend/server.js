@@ -15,6 +15,20 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files from FORENTEND directory
+app.use(express.static(path.join(__dirname, '../FORENTEND')));
+
+// Default route to serve the landing page
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../FORENTEND/LandingPage.html'));
+});
+
+// Route for HomeTools pages
+app.get('/HomeTools/:page', (req, res) => {
+    const page = req.params.page;
+    res.sendFile(path.join(__dirname, '../FORENTEND/HomeTools', page));
+});
+
 // Secure Secret Key for JWT
 const SECRET_KEY =
   process.env.SECRET_KEY ||
